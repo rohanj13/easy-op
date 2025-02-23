@@ -1,15 +1,20 @@
 def calculate_risk_score(assessment):
     """
-    Calculate the risk score based on the pre-operative assessment data.
-    Sample calculation: BMI + conditions + medications.
+    Sample risk calculation based on BMI and existing conditions.
     """
     bmi = assessment.weight / ((assessment.height / 100) ** 2)  # Convert height to meters
-    risk_score = bmi  # Start with BMI as a base risk factor
-    
+    risk_score = 0
+
+    # BMI-based risk scoring
+    if bmi < 18.5:
+        risk_score += 1  # Underweight risk
+    elif bmi > 30:
+        risk_score += 3  # Obesity risk
+    else:
+        risk_score += 2  # Normal weight, lower risk
+
+    # Check existing conditions
     if assessment.existing_conditions:
-        risk_score += 10  # Example: Add risk for pre-existing conditions
+        risk_score += 2  # Increase risk for existing conditions
 
-    if assessment.medications:
-        risk_score += 5  # Example: Add risk for medications
-
-    return min(risk_score, 100)  # Keep it within a max limit
+    return risk_score

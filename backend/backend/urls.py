@@ -14,16 +14,25 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-from django.contrib import admin
 from django.urls import path, include
-# from rest_framework.routers import DefaultRouter
-# from easyop.views import PreOperativeAssessmentViewSet, RiskAssessmentViewSet
+from rest_framework import permissions
+from drf_yasg.views import get_schema_view
+from drf_yasg import openapi
 
-# router = DefaultRouter()
-# router.register(r'preop-assessments', PreOperativeAssessmentViewSet)
-# router.register(r'risk-assessments', RiskAssessmentViewSet)
+# Swagger Schema View
+schema_view = get_schema_view(
+    openapi.Info(
+        title="Pre-Operative Assessment API",
+        default_version="v1",
+        description="API documentation for managing pre-operative assessments and risk evaluations",
+    ),
+    public=True,
+    permission_classes=(permissions.AllowAny,),
+)
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('api/', include('easyop.urls')),
+    path('api/', include('easyop.urls')),  # Include your preop app URLs
+    path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
+    path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
 ]
+
