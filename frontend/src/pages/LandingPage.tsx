@@ -70,7 +70,7 @@ const LandingPage: React.FC = () => {
                   type="primary"
                   size="large"
                   icon={<ArrowRightOutlined />}
-                  onClick={() => navigate('/register')}
+                  onClick={() => navigate('/newform')}
                   style={{ height: '48px', padding: '0 32px', fontSize: '16px' }}
                 >
                   Get Started
