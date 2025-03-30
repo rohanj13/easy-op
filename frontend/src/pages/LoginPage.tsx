@@ -25,7 +25,7 @@ const Login: React.FC = () => {
         <div style={{ maxWidth: '400px', margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: '24px' }}>
             <MedicineBoxOutlined style={{ fontSize: '32px', color: '#1890ff' }} />
-            <Title level={2}>Welcome Back to MedPrep</Title>
+            <Title level={2}>Welcome Back to EasyOp</Title>
           </div>
           
           <Card>

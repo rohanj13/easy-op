@@ -26,7 +26,7 @@ const Register: React.FC = () => {
         <div style={{ maxWidth: '500px', margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: '24px' }}>
             <MedicineBoxOutlined style={{ fontSize: '32px', color: '#1890ff' }} />
-            <Title level={2}>Create Your MedPrep Account</Title>
+            <Title level={2}>Create Your EasyOp Account</Title>
           </div>
 
           <Card>
