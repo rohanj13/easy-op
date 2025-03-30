@@ -4,7 +4,7 @@ import { Routes, Route } from 'react-router-dom';
 import LandingPage from './pages/LandingPage';
 import Login from './pages/LoginPage';
 import Register from './pages/RegisterPage';
-import PreopForm from './components/PreopForm';
+import PreopForm from './pages/PreopForm';
 import DoctorDashboard from './pages/DoctorDashboard';
 
 const About = () => <div>About Page</div>;
