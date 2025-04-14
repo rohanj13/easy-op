@@ -1,4 +1,4 @@
-
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useEffect, useState } from "react";
 import { 
   Layout, 
@@ -20,7 +20,6 @@ import {
   Badge,
   Tabs,
   Avatar,
-  Modal,
   Grid,
   DatePicker
 } from "antd";
@@ -38,7 +37,8 @@ import {
   FileTextOutlined,
   UnorderedListOutlined,
   InfoCircleOutlined,
-  CalendarOutlined
+  CalendarOutlined,
+  ArrowRightOutlined
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { api } from "../services/api/api";
@@ -59,8 +59,6 @@ const DoctorDashboard: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [riskLoading, setRiskLoading] = useState<{ [key: number]: boolean }>({});
   const [searchTerm, setSearchTerm] = useState("");
-  const [detailView, setDetailView] = useState<Assessment | null>(null);
-  const [isDetailModalVisible, setIsDetailModalVisible] = useState(false);
   const [filterDate, setFilterDate] = useState<moment.Moment | null>(null);
   const navigate = useNavigate();
   const screens = useBreakpoint();
@@ -82,7 +80,10 @@ const DoctorDashboard: React.FC = () => {
     }
   };
 
-  const runRiskAssessment = async (id: number) => {
+  const runRiskAssessment = async (id: number, event: React.MouseEvent) => {
+    // Prevent collapse panel from toggling when clicking the button
+    event.stopPropagation();
+    
     setRiskLoading((prev) => ({ ...prev, [id]: true }));
     try {
       const response = await api.get(`/risk-assessments/${id}/`);
@@ -92,11 +93,6 @@ const DoctorDashboard: React.FC = () => {
           assessment.id === id ? { ...assessment, risk_score: newRiskScore } : assessment
         )
       );
-      
-      // If we're in detail view, update that as well
-      if (detailView && detailView.id === id) {
-        setDetailView({...detailView, risk_score: newRiskScore});
-      }
       
       notification.success({
         message: "Risk Assessment Complete",
@@ -113,6 +109,13 @@ const DoctorDashboard: React.FC = () => {
     } finally {
       setRiskLoading((prev) => ({ ...prev, [id]: false }));
     }
+  };
+
+  // Navigate to detail view page
+  const navigateToDetailView = (id: number, event: React.MouseEvent) => {
+    // Prevent collapse panel from toggling when clicking the button
+    event.stopPropagation();
+    navigate(`/assessment/${id}`);
   };
 
   useEffect(() => {
@@ -143,12 +146,6 @@ const DoctorDashboard: React.FC = () => {
     assessed: assessments.filter(a => a.risk_score !== undefined).length,
     highRisk: assessments.filter(a => a.risk_score !== undefined && a.risk_score >= 70).length,
     upcoming: assessments.filter(a => moment(a.date_of_operation).isAfter(moment())).length
-  };
-
-  // Show details modal
-  const showDetails = (assessment: Assessment) => {
-    setDetailView(assessment);
-    setIsDetailModalVisible(true);
   };
 
   // Risk level badge
@@ -351,140 +348,19 @@ const DoctorDashboard: React.FC = () => {
                           </Col>
                         </Row>
                       }
+                      extra={
+                        <Space style={{ marginRight: screens.xs ? 0 : 16 }}>
+                          <Button
+                            type="primary"
+                            icon={<ArrowRightOutlined />}
+                            onClick={(e) => navigateToDetailView(assessment.id, e)}
+                          >
+                            View Details
+                          </Button>
+                        </Space>
+                      }
                     >
-                      <Row gutter={[16, 16]}>
-                        <Col xs={24} lg={18}>
-                          <Tabs defaultActiveKey="1">
-                            <TabPane tab={<span><InfoCircleOutlined /> Overview</span>} key="1">
-                              <Descriptions
-                                bordered
-                                size="small"
-                                column={{ xxl: 4, xl: 3, lg: 3, md: 2, sm: 2, xs: 1 }}
-                              >
-                                <Descriptions.Item label="Gender">{assessment.gender || 'Not specified'}</Descriptions.Item>
-                                <Descriptions.Item label="Age">{age}</Descriptions.Item>
-                                <Descriptions.Item label="Hospital">{assessment.hospital || 'Not specified'}</Descriptions.Item>
-                                <Descriptions.Item label="BMI">
-                                  {assessment.height && assessment.weight 
-                                    ? (assessment.weight / ((assessment.height / 100) ** 2)).toFixed(1)
-                                    : 'N/A'}
-                                </Descriptions.Item>
-                                <Descriptions.Item label="Operation Reason" span={2}>
-                                  {formatValue(assessment.operation_reason)}
-                                </Descriptions.Item>
-                              </Descriptions>
-                            </TabPane>
-                            <TabPane tab={<span><HeartOutlined /> Medical History</span>} key="2">
-                              <Descriptions
-                                bordered
-                                size="small"
-                                column={{ xxl: 3, xl: 3, lg: 2, md: 2, sm: 2, xs: 1 }}
-                              >
-                                <Descriptions.Item label="Recently Unwell">{formatValue(assessment.recently_unwell)}</Descriptions.Item>
-                                <Descriptions.Item label="Previous Anaesthetic">{formatValue(assessment.previous_anaesthetic)}</Descriptions.Item>
-                                <Descriptions.Item label="Family Anaesthetic Reaction">{formatValue(assessment.family_anaesthetic_reaction)}</Descriptions.Item>
-                                <Descriptions.Item label="Allergies">{formatValue(assessment.allergies)}</Descriptions.Item>
-                                <Descriptions.Item label="Smoke/Vape">{assessment.smoke_or_vape || 'Not specified'}</Descriptions.Item>
-                                <Descriptions.Item label="Alcohol Consumption">{formatValue(assessment.alcohol_consumption)}</Descriptions.Item>
-                                <Descriptions.Item label="COVID History">{formatValue(assessment.covid_history)}</Descriptions.Item>
-                              </Descriptions>
-                            </TabPane>
-                            <TabPane tab={<span><FileTextOutlined /> Medical Conditions</span>} key="3">
-                              <Descriptions
-                                bordered
-                                size="small"
-                                column={{ xxl: 3, xl: 3, lg: 2, md: 2, sm: 2, xs: 1 }}
-                              >
-                                <Descriptions.Item label="Heart Issues">{formatValue(assessment.heart_issues)}</Descriptions.Item>
-                                <Descriptions.Item label="Shortness of Breath">{formatValue(assessment.shortness_of_breath)}</Descriptions.Item>
-                                <Descriptions.Item label="Lung Issues">{formatValue(assessment.lung_issues)}</Descriptions.Item>
-                                <Descriptions.Item label="Diabetes">{formatValue(assessment.diabetes)}</Descriptions.Item>
-                                <Descriptions.Item label="Gastrointestinal Issues">{formatValue(assessment.gastrointestinal_issues)}</Descriptions.Item>
-                                <Descriptions.Item label="Thyroid Disease">{formatValue(assessment.thyroid_disease)}</Descriptions.Item>
-                                <Descriptions.Item label="Neurological Condition">{formatValue(assessment.neurological_condition)}</Descriptions.Item>
-                                <Descriptions.Item label="Rheumatoid Arthritis">{formatValue(assessment.rheumatoid_arthritis)}</Descriptions.Item>
-                                <Descriptions.Item label="Kidney Condition">{formatValue(assessment.kidney_condition)}</Descriptions.Item>
-                                <Descriptions.Item label="Blood Clotting">{formatValue(assessment.blood_clotting)}</Descriptions.Item>
-                                <Descriptions.Item label="Cancer">{formatValue(assessment.cancer)}</Descriptions.Item>
-                                <Descriptions.Item label="Other Conditions">{formatValue(assessment.other_medical_conditions)}</Descriptions.Item>
-                              </Descriptions>
-                            </TabPane>
-                            <TabPane tab={<span><MedicineBoxFilled /> Medications</span>} key="4">
-                              <Row gutter={[16, 16]}>
-                                <Col xs={24}>
-                                  <Card title="Regular Medications" size="small">
-                                    <Paragraph>
-                                      {formatValue(assessment.regular_medications)}
-                                    </Paragraph>
-                                  </Card>
-                                </Col>
-                                <Col xs={24} md={12}>
-                                  <Card title="Effective Pain Relievers" size="small">
-                                    <Paragraph>
-                                      {formatArray(assessment.effective_pain_relievers)}
-                                    </Paragraph>
-                                  </Card>
-                                </Col>
-                                <Col xs={24} md={12}>
-                                  <Card title="Pain Relievers to Avoid" size="small">
-                                    <Paragraph>
-                                      {formatArray(assessment.pain_relievers_to_avoid)}
-                                    </Paragraph>
-                                  </Card>
-                                </Col>
-                              </Row>
-                            </TabPane>
-                            <TabPane tab={<span><UnorderedListOutlined /> Dental</span>} key="5">
-                              <Card title="Dental Descriptions" size="small">
-                                <Paragraph>
-                                  {formatArray(assessment.dental_descriptions)}
-                                </Paragraph>
-                              </Card>
-                            </TabPane>
-                          </Tabs>
-                        </Col>
-                        <Col xs={24} lg={6}>
-                          <Space direction="vertical" style={{ width: '100%' }}>
-                            <Card size="small" title="Actions">
-                              <Space direction="vertical" style={{ width: '100%' }}>
-                                <Button 
-                                  type="primary" 
-                                  block
-                                  onClick={() => runRiskAssessment(assessment.id)}
-                                  loading={riskLoading[assessment.id]}
-                                  icon={<SyncOutlined />}
-                                >
-                                  Run Risk Assessment
-                                </Button>
-                                <Button 
-                                  block
-                                  onClick={() => showDetails(assessment)}
-                                  icon={<InfoCircleOutlined />}
-                                >
-                                  View Full Details
-                                </Button>
-                              </Space>
-                            </Card>
-                            <Card 
-                              size="small" 
-                              title="Assessment Timeline"
-                              style={{ marginTop: 16 }}
-                            >
-                              <Descriptions column={1} size="small">
-                                <Descriptions.Item label="Created">
-                                  {formatDate(assessment.date_of_operation)}
-                                </Descriptions.Item>
-                                <Descriptions.Item label="Updated">
-                                  {formatDate(assessment.date_of_operation)}
-                                </Descriptions.Item>
-                                <Descriptions.Item label="Operation">
-                                  {formatDate(assessment.date_of_operation)}
-                                </Descriptions.Item>
-                              </Descriptions>
-                            </Card>
-                          </Space>
-                        </Col>
-                      </Row>
+                      
                     </Panel>
                   );
                 })}
@@ -492,128 +368,6 @@ const DoctorDashboard: React.FC = () => {
             )}
           </Card>
         </Content>
-
-        {/* Detailed View Modal */}
-        <Modal
-          title={
-            <Space>
-              <UserOutlined />
-              <span>Detailed Patient Assessment</span>
-              {detailView && <RiskBadge riskScore={detailView.risk_score} />}
-            </Space>
-          }
-          visible={isDetailModalVisible}
-          onCancel={() => setIsDetailModalVisible(false)}
-          width={1000}
-          footer={[
-            <Button 
-              key="run-assessment" 
-              type="primary"
-              onClick={() => detailView && runRiskAssessment(detailView.id)}
-              loading={detailView ? riskLoading[detailView.id] : false}
-              icon={<SyncOutlined />}
-            >
-              Run Risk Assessment
-            </Button>,
-            <Button 
-              key="close" 
-              onClick={() => setIsDetailModalVisible(false)}
-            >
-              Close
-            </Button>,
-          ]}
-        >
-          {detailView && (
-            <Tabs defaultActiveKey="1">
-              <TabPane tab="Patient Details" key="1">
-                <Descriptions bordered column={{ xxl: 3, xl: 3, lg: 3, md: 2, sm: 2, xs: 1 }}>
-                  <Descriptions.Item label="Gender">{detailView.gender || 'Not specified'}</Descriptions.Item>
-                  <Descriptions.Item label="Date of Birth">{formatDate(detailView.date_of_birth)}</Descriptions.Item>
-                  <Descriptions.Item label="Age">{calculateAge(detailView.date_of_birth)}</Descriptions.Item>
-                  <Descriptions.Item label="Height">{detailView.height || 'N/A'} cm</Descriptions.Item>
-                  <Descriptions.Item label="Weight">{detailView.weight || 'N/A'} kg</Descriptions.Item>
-                  <Descriptions.Item label="BMI">
-                    {detailView.height && detailView.weight 
-                      ? (detailView.weight / ((detailView.height / 100) ** 2)).toFixed(1)
-                      : 'N/A'}
-                  </Descriptions.Item>
-                </Descriptions>
-              </TabPane>
-              
-              <TabPane tab="Operation Details" key="2">
-                <Descriptions bordered column={{ xxl: 3, xl: 3, lg: 3, md: 2, sm: 2, xs: 1 }}>
-                  <Descriptions.Item label="Operation">{detailView.operation || 'Not specified'}</Descriptions.Item>
-                  <Descriptions.Item label="Surgeon">{detailView.surgeon || 'Not specified'}</Descriptions.Item>
-                  <Descriptions.Item label="Hospital">{detailView.hospital || 'Not specified'}</Descriptions.Item>
-                  <Descriptions.Item label="Operation Date">{formatDate(detailView.date_of_operation)}</Descriptions.Item>
-                  <Descriptions.Item label="Reason" span={2}>{formatValue(detailView.operation_reason)}</Descriptions.Item>
-                </Descriptions>
-              </TabPane>
-              
-              <TabPane tab="Medical History" key="3">
-                <Descriptions bordered column={{ xxl: 2, xl: 2, lg: 2, md: 1, sm: 1, xs: 1 }}>
-                  <Descriptions.Item label="Recently Unwell">{formatValue(detailView.recently_unwell)}</Descriptions.Item>
-                  <Descriptions.Item label="Previous Anaesthetic">{formatValue(detailView.previous_anaesthetic)}</Descriptions.Item>
-                  <Descriptions.Item label="Family Anaesthetic Reaction">{formatValue(detailView.family_anaesthetic_reaction)}</Descriptions.Item>
-                  <Descriptions.Item label="Allergies">{formatValue(detailView.allergies)}</Descriptions.Item>
-                  <Descriptions.Item label="Smoke/Vape">{detailView.smoke_or_vape || 'Not specified'}</Descriptions.Item>
-                  <Descriptions.Item label="Alcohol Consumption">{formatValue(detailView.alcohol_consumption)}</Descriptions.Item>
-                </Descriptions>
-              </TabPane>
-              
-              <TabPane tab="Medical Conditions" key="4">
-                <Descriptions bordered column={{ xxl: 2, xl: 2, lg: 2, md: 1, sm: 1, xs: 1 }}>
-                  <Descriptions.Item label="Heart Issues">{formatValue(detailView.heart_issues)}</Descriptions.Item>
-                  <Descriptions.Item label="Shortness of Breath">{formatValue(detailView.shortness_of_breath)}</Descriptions.Item>
-                  <Descriptions.Item label="Lung Issues">{formatValue(detailView.lung_issues)}</Descriptions.Item>
-                  <Descriptions.Item label="Diabetes">{formatValue(detailView.diabetes)}</Descriptions.Item>
-                  <Descriptions.Item label="Gastrointestinal Issues">{formatValue(detailView.gastrointestinal_issues)}</Descriptions.Item>
-                  <Descriptions.Item label="Thyroid Disease">{formatValue(detailView.thyroid_disease)}</Descriptions.Item>
-                  <Descriptions.Item label="Neurological Condition">{formatValue(detailView.neurological_condition)}</Descriptions.Item>
-                  <Descriptions.Item label="Rheumatoid Arthritis">{formatValue(detailView.rheumatoid_arthritis)}</Descriptions.Item>
-                  <Descriptions.Item label="Kidney Condition">{formatValue(detailView.kidney_condition)}</Descriptions.Item>
-                  <Descriptions.Item label="Blood Clotting">{formatValue(detailView.blood_clotting)}</Descriptions.Item>
-                  <Descriptions.Item label="Cancer">{formatValue(detailView.cancer)}</Descriptions.Item>
-                  <Descriptions.Item label="Other Conditions">{formatValue(detailView.other_medical_conditions)}</Descriptions.Item>
-                  <Descriptions.Item label="COVID History">{formatValue(detailView.covid_history)}</Descriptions.Item>
-                </Descriptions>
-              </TabPane>
-              
-              <TabPane tab="Medications & Dental" key="5">
-                <Space direction="vertical" style={{ width: '100%' }}>
-                  <Card title="Regular Medications" size="small">
-                    <Paragraph>
-                      {formatValue(detailView.regular_medications)}
-                    </Paragraph>
-                  </Card>
-                  
-                  <Row gutter={16}>
-                    <Col xs={24} md={12}>
-                      <Card title="Effective Pain Relievers" size="small">
-                        <Paragraph>
-                          {formatArray(detailView.effective_pain_relievers)}
-                        </Paragraph>
-                      </Card>
-                    </Col>
-                    <Col xs={24} md={12}>
-                      <Card title="Pain Relievers to Avoid" size="small">
-                        <Paragraph>
-                          {formatArray(detailView.pain_relievers_to_avoid)}
-                        </Paragraph>
-                      </Card>
-                    </Col>
-                  </Row>
-                  
-                  <Card title="Dental Descriptions" size="small">
-                    <Paragraph>
-                      {formatArray(detailView.dental_descriptions)}
-                    </Paragraph>
-                  </Card>
-                </Space>
-              </TabPane>
-            </Tabs>
-          )}
-        </Modal>
       </Layout>
     </ConfigProvider>
   );

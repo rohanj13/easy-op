@@ -6,6 +6,7 @@ import Login from './pages/LoginPage';
 import Register from './pages/RegisterPage';
 import PreopForm from './pages/PreopForm';
 import DoctorDashboard from './pages/DoctorDashboard';
+import PatientDetailsView from './pages/DetailView';
 
 const About = () => <div>About Page</div>;
 
@@ -18,6 +19,7 @@ const App: React.FC = () => {
       <Route path="/about" element={<About />} />
       <Route path="/newform" element={<PreopForm/>} />
       <Route path="/doctordashboard" element={<DoctorDashboard/>} />
+      <Route path="/assessment/:id" element={<PatientDetailsView/>} />
     </Routes>
   );
 };
