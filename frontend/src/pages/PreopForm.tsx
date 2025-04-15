@@ -24,6 +24,8 @@ import PageHeader from '../components/PreopForm/PageHeader';
 import PatientDetails from '../components/PreopForm/PatientDetails';
 import VitalSigns from '../components/PreopForm/VitalSigns';
 import Allergies from '../components/PreopForm/Allergies';
+import Airway from '../components/PreopForm/Airway';
+import MedicalHistory from '../components/PreopForm/MedicalHistory';
 // import OperationDetailsSection from '../components/PreopForm/OperationDetailsSection';
 // import PatientMedicalDetailsSection from '../components/PreopForm/PatientMedicalDetailsSection';
 // import MedicalConditionsSection from '../components/PreopForm/MedicalConditionsSection';
@@ -51,14 +53,14 @@ const PreopForm: React.FC = () => {
       title: 'Allergies',
       content: <Allergies />,
     },
-    // {
-    //   title: 'Medical Conditions',
-    //   content: <MedicalConditionsSection />,
-    // },
-    // {
-    //   title: 'Other Info',
-    //   content: <OtherHealthInfoSection />,
-    // },
+    {
+      title: 'Airway',
+      content: <Airway />,
+    },
+    {
+      title: 'Medical History',
+      content: <MedicalHistory />,
+    },
   ];
 
   const onNext = () => {
