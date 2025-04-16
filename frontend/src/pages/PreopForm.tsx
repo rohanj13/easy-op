@@ -26,6 +26,10 @@ import VitalSigns from '../components/PreopForm/VitalSigns';
 import Allergies from '../components/PreopForm/Allergies';
 import Airway from '../components/PreopForm/Airway';
 import MedicalHistory from '../components/PreopForm/MedicalHistory';
+import SurgicalHistory from '../components/PreopForm/SurgicalHistory';
+import AnaesthesiaHistory from '../components/PreopForm/AnaesthesiaHistory';
+import SocialHistory from '../components/PreopForm/SocialHistory';
+
 // import OperationDetailsSection from '../components/PreopForm/OperationDetailsSection';
 // import PatientMedicalDetailsSection from '../components/PreopForm/PatientMedicalDetailsSection';
 // import MedicalConditionsSection from '../components/PreopForm/MedicalConditionsSection';
@@ -60,6 +64,18 @@ const PreopForm: React.FC = () => {
     {
       title: 'Medical History',
       content: <MedicalHistory />,
+    },
+    {
+      title: 'Surgical History',
+      content: <SurgicalHistory />,
+    },
+    {
+      title: 'Anaesthesia History',
+      content: <AnaesthesiaHistory />,
+    },
+    {
+      title: 'Social History',
+      content: <SocialHistory />,
     },
   ];
 
