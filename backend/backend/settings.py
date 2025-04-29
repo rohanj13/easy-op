@@ -40,7 +40,8 @@ INSTALLED_APPS = [
     'easyop',
     'corsheaders',
     'rest_framework',
-    'drf_yasg'
+    'drf_yasg',
+    'AssessmentCardiac'
 ]
 
 MIDDLEWARE = [

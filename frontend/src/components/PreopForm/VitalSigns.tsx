@@ -1,15 +1,22 @@
 import React from "react";
-import { Form, Input, InputNumber, Select, Checkbox } from "antd";
+import { Form, Input, InputNumber, Select} from "antd";
+import MultiColumnCheckboxGroup from "../common/MultiColumnCheckboxGroup";
+
+const genderOptions = ["Male", "Female", "Unknown", "Indeterminate"];
+const cardiacExamOptions = ["Regular Rate and Rhythm", "Heart sounds dual", "No murmurs", "Cardiac exam abnormality", "No carotid bruits"];
+const lungExamOptions = ["Clear to auscultation bilaterally", "Lung exam abnormality"];
+const otherExamFindingsOptions = ["Anxious re anaesthesia", "Do not use left arm for IV access", "Appears Frail", "Do not use right arm for IV access", "Poor IV Access", "Sedated", "Other Exam Findings"];
 
 const VitalSigns: React.FC = () => {
   return (
     <>
       <Form.Item label="Gender" name={["vitalSigns", "gender"]}>
         <Select>
-          <Select.Option value="male">Male</Select.Option>
-          <Select.Option value="female">Female</Select.Option>
-          <Select.Option value="unknown">Unknown</Select.Option>
-          <Select.Option value="indeterminate">Indeterminate</Select.Option>
+          {genderOptions.map((option) => (
+            <Select.Option key={option.toLowerCase()} value={option.toLowerCase()}>
+              {option}
+            </Select.Option>
+          ))}
         </Select>
       </Form.Item>
 
@@ -51,32 +58,31 @@ const VitalSigns: React.FC = () => {
         </Select>
       </Form.Item>
 
-      <Form.Item label="Cardiac Exam" name={["vitalSigns", "cardiacExam"]}>
-        <Checkbox.Group>
-          <Checkbox value="regularRateRhythm">Regular Rate and Rhythm</Checkbox>
-          <Checkbox value="heartSoundsDual">Heart sounds dual</Checkbox>
-          <Checkbox value="noMurmurs">No murmurs</Checkbox>
-          <Checkbox value="cardiacExamAbnormality">Cardiac exam abnormality</Checkbox>
-          <Checkbox value="noCarotidBruits">No carotid bruits</Checkbox>
-        </Checkbox.Group>
-      </Form.Item>
-      <Form.Item label="Lung Exam" name={["vitalSigns", "lungExam"]}>
-        <Checkbox.Group>
-          <Checkbox value="auscultationBilaterally">Clear to auscultation bilaterally</Checkbox>
-          <Checkbox value="lungAbnormality">Lung exam abnormality</Checkbox>
-        </Checkbox.Group>
-      </Form.Item>
-      <Form.Item label="Other Exam Findings" name={["vitalSigns", "otherFindings"]}>
-        <Checkbox.Group>
-          <Checkbox value="anxiousAnaesthesia">Anxious re anaesthesia</Checkbox>
-          <Checkbox value="noLeftArmForIV">Do not use left arm for IV access</Checkbox>
-          <Checkbox value="appearsFrail">Appears Frail</Checkbox>
-          <Checkbox value="noRightArmForIV">Do not use right arm for IV access</Checkbox>
-          <Checkbox value="poorIVAccess">Poor IV Access</Checkbox>
-          <Checkbox value="sedated">Sedated</Checkbox>
-          <Checkbox value="otherExamFindings">Other Exam Findings</Checkbox>
-        </Checkbox.Group>
-      </Form.Item>
+      <MultiColumnCheckboxGroup
+        label="Cardiac Exam"
+        name="cardiacExam"
+        options={cardiacExamOptions}
+        columns={3}
+        includeOther={true}
+        otherLabel="Other Exam Findings"
+        />
+
+      <MultiColumnCheckboxGroup
+        label="Lung Exam"
+        name="lungExam"
+        options={lungExamOptions}
+        columns={2}
+        includeOther={true}
+        otherLabel="Other Exam Findings"
+        />
+      <MultiColumnCheckboxGroup
+        label="Other Exam Findings"
+        name="otherExamFindings"
+        options={otherExamFindingsOptions}
+        columns={3}
+        includeOther={true}
+        otherLabel="Other Exam Findings"
+        />
     </>
   );
 };
