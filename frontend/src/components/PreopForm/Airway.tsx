@@ -1,65 +1,80 @@
-// components/Section4.tsx
 import React from "react";
-import { Checkbox, Form, Input } from "antd";
+import { Form, Input } from "antd";
+import MultiColumnCheckboxGroup from "../common/MultiColumnCheckboxGroup";
+const mallampatiOptions = ["Class I", "Class II", "Class III", "Class IV", "Unable to assess"];
 
+const airwayDifficultyOptions = [
+  "Not Anticipated",
+  "Possible",
+  "Anticipated",
+  "Known Airway Difficulty",
+  "Intubated",
+  "Unable to assess"
+];
+
+const dentalOptions = [
+  "Teeth Intact",
+  "Edentulous",
+  "Poor Dentition",
+  "Complete Dentures",
+  "Partial Dentures",
+  "Full Upper Dentures",
+  "Full Lower Dentures",
+  "Partial Dentures Upper",
+  "Partial Dentures Lower"
+];
+
+const neckOptions = [
+  "Restricted Neck Mobility",
+  "No Restriction of Neck Movement",
+  "Short",
+  "Thick"
+];
+
+const facialHairOptions = ["Beard", "Moustache"];
+
+// --------------------
+// Component
+// --------------------
 const Airway: React.FC = () => {
   return (
     <>
-      <Form.Item label="Mallampati" name={["airway", "airwayMallampati"]}>
-        <Checkbox.Group>
-          <Checkbox value="classI">Class I</Checkbox>
-          <Checkbox value="classII">Class II</Checkbox>
-          <Checkbox value="classIII">Class III</Checkbox>
-          <Checkbox value="classIV">Class IV</Checkbox>
-          <Checkbox value="unableToAssess">Unable to assess</Checkbox>
-        </Checkbox.Group>
-      </Form.Item>
+      <MultiColumnCheckboxGroup
+        label="Mallampati"
+        name="airway.airwayMallampati"
+        options={mallampatiOptions}
+        columns={4}
+      />
 
-      <Form.Item label="Airway Difficulty" name={["airway", "airwayDifficulty"]}>
-        <Checkbox.Group>
-          <Checkbox value="notAnticipated">Not Anticipated</Checkbox>
-          <Checkbox value="possible">Possible</Checkbox>
-          <Checkbox value="anticipated">Anticipated</Checkbox>
-          <Checkbox value="knownAirwayDifficulty">Known Airway Difficulty</Checkbox>
-          <Checkbox value="intubated">Intubated</Checkbox>
-          <Checkbox value="unableToAssess">Unable to assess</Checkbox>
-          <Checkbox value="knownAirwayDifficulty">Known Airway Difficulty</Checkbox>
-          <Checkbox value="intubated">Intubated</Checkbox>
-          <Checkbox value="unableToAssess">Unable to assess</Checkbox>
-        </Checkbox.Group>
-      </Form.Item>
+      <MultiColumnCheckboxGroup
+        label="Airway Difficulty"
+        name="airway.airwayDifficulty"
+        options={airwayDifficultyOptions}
+        columns={4}
+      />
 
-      <Form.Item label="Dental" name={["airway", "airwayDental"]}>
-        <Checkbox.Group>
-          <Checkbox value="teethIntact">Teeth Intact</Checkbox>
-          <Checkbox value="edentulous">Edentulous</Checkbox>
-          <Checkbox value="poorDentition">Poor Dentition</Checkbox>
-          <Checkbox value="completeDentures">Complete Dentures</Checkbox>
-          <Checkbox value="partialDentures">Partial Dentures</Checkbox>
-          <Checkbox value="fullUpperDentures">Full Upper Dentures</Checkbox>
-          <Checkbox value="fullLowerDentures">Full Lower Dentures</Checkbox>
-          <Checkbox value="partialDenturesUpper">Partial Dentures Upper</Checkbox>
-          <Checkbox value="partialDenturesLower">Partial Dentures Lower</Checkbox>
-        </Checkbox.Group>
-      </Form.Item>
+      <MultiColumnCheckboxGroup
+        label="Dental"
+        name="airway.airwayDental"
+        options={dentalOptions}
+        columns={3}
+      />
 
-      <Form.Item label="Neck" name={["airway", "airwayNeck"]}>
-        <Checkbox.Group>
-          <Checkbox value="restrictedNeckMobility">Restricted Neck Mobility</Checkbox>
-          <Checkbox value="noRestriction">No Restriction of Neck Movement</Checkbox>
-          <Checkbox value="short">Short</Checkbox>
-          <Checkbox value="thick">Thick</Checkbox>
-        </Checkbox.Group>
-      </Form.Item>
+      <MultiColumnCheckboxGroup
+        label="Neck"
+        name="airway.airwayNeck"
+        options={neckOptions}
+        columns={4}
+      />
 
-      <Form.Item label="Facial Hair" name={["airway", "airwayFacialHair"]}>
-        <Checkbox.Group>
-          <Checkbox value="beard">Beard</Checkbox>
-          <Checkbox value="moustache">Moustache</Checkbox>
-        </Checkbox.Group>
-      </Form.Item>
+      <MultiColumnCheckboxGroup
+        label="Facial Hair"
+        name="airway.airwayFacialHair"
+        options={facialHairOptions}
+        columns={2}
+      />
 
-      <Form.Item label="Airway Exam Notes" name="airwayExamNotes">
+      <Form.Item label="Airway Exam Notes" name={["airway", "airwayExamNotes"]}>
         <Input />
       </Form.Item>
     </>
