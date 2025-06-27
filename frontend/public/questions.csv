@@ -1,0 +1,7 @@
+Question ID,Tab,Sub-Tab,Question,Type,Look Up Dictionary,Validation
+Q1,Demographics,Basic Info,What is your age?,number,,required|min:0|max:120
+Q2,Demographics,Basic Info,What is your gender?,select,genderDict,required
+Q3,Medical History,Heart,Do you have a pacemaker?,radio,yesNoDict,required
+Q4,Medical History,Respiratory,Do you smoke?,radio,yesNoDict,
+Q5,Contact,Details,What is your email?,text,,required
+Q6,Contact,Details,What is your phone number?,text,,required
