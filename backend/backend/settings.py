@@ -34,14 +34,16 @@ INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
-    'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'easyop',
     'corsheaders',
     'rest_framework',
-    'drf_yasg',
-    'AssessmentCardiac'
+    'drf_spectacular',
+    'AssessmentCardiac',
+    'users',
+    'hospitals',
+    'easyop',
+    'django_cognito_jwt',
 ]
 
 MIDDLEWARE = [
@@ -143,15 +145,28 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# AUTH_USER_MODEL = 'assessment.User'
+AUTH_USER_MODEL = 'users.CognitoUser'
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        # 'rest_framework.authentication.SessionAuthentication',
+        'users.authentication.CognitoAuthentication',
         # 'rest_framework.authentication.BasicAuthentication',
+        # 'django_cognito_jwt.JSONWebTokenAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': [
-        # 'rest_framework.permissions.IsAuthenticated',
-        'rest_framework.permissions.AllowAny',
-    ]
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}
+COGNITO_AWS_REGION = 'ap-southeast-2'
+COGNITO_USER_POOL = 'ap-southeast-2_Kp4EsFsRG'
+COGNITO_AUDIENCE = '6fsimfpu0tjvdrqun6c4veno48'
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'PreOpAI API',
+    'DESCRIPTION': 'Backend API for PreOpAI Application',
+    'VERSION': '1.0.0',
+    'SERVE_PERMISSIONS': ['rest_framework.permissions.AllowAny'],
+    'SERVE_AUTHENTICATION': ['users.authentication.CognitoAuthentication'],
+    'SECURITY': [{'BearerAuth': []}],
 }

@@ -1,4 +1,4 @@
-import { api } from './api';
+import api from './api';
 import { ENDPOINTS } from './endpoints';
 import { Assessment } from '../../types/assessment';
 

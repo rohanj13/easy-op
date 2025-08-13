@@ -6,17 +6,19 @@ import {
   SafetyOutlined, 
   TeamOutlined,
   LoginOutlined,
-  UserAddOutlined,
+  // UserAddOutlined,
   ArrowRightOutlined 
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import 'antd/dist/reset.css';  // Make sure this is imported
+import { useAuth } from "react-oidc-context";// Adjust the import based on your auth setup
 
 const { Header, Content } = Layout;
 const { Title, Paragraph } = Typography;
 
 const LandingPage: React.FC = () => {
   const navigate = useNavigate();
+  const auth = useAuth();
 
   return (
     <ConfigProvider>
@@ -39,17 +41,10 @@ const LandingPage: React.FC = () => {
               <Button 
                 type="link"
                 icon={<LoginOutlined />}
-                onClick={() => navigate('/login')}
+                onClick={() => auth.signinRedirect()}
                 style={{ marginRight: '16px' }}
               >
                 Login
-              </Button>
-              <Button 
-                type="primary"
-                icon={<UserAddOutlined />}
-                onClick={() => navigate('/register')}
-              >
-                Sign Up
               </Button>
             </div>
           </div>

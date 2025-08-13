@@ -17,7 +17,7 @@ import {
   CheckOutlined,
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
-import { api } from '../services/api/api';
+import api from '../services/api/api';
 import { Assessment } from '../types/assessment';
 
 import PageHeader from '../components/PreopForm/PageHeader';

@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useEffect, useState } from "react";
+import { useAuth } from "react-oidc-context";
 import { 
   Layout, 
   Button, 
@@ -38,14 +39,18 @@ import {
   UnorderedListOutlined,
   InfoCircleOutlined,
   CalendarOutlined,
-  ArrowRightOutlined
+  ArrowRightOutlined,
+  LogoutOutlined
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
-import { api } from "../services/api/api";
+import api from "../services/api/api";
 import moment from 'moment';
 
 import { getRiskLevel } from "../utils/riskLevelUtils";
 import { Assessment } from "../types/assessment";
+import SignOutButton from "../components/common/SignOutButton";
+
+// TODO: Create a sidebar with logout button
 
 const { Header, Content } = Layout;
 const { Title, Text, Paragraph } = Typography;
@@ -208,12 +213,15 @@ const DoctorDashboard: React.FC = () => {
               <MedicineBoxOutlined style={{ marginRight: '8px' }} />
               Easy-Op
             </div>
-            <Button 
+            <Space>
+              <Button 
               type="link" 
               onClick={() => navigate('/')}
-            >
-              Exit Dashboard
-            </Button>
+              >
+                Exit Dashboard
+              </Button>
+              <SignOutButton />
+            </Space>
           </div>
         </Header>
 
