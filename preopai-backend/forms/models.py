@@ -18,9 +18,8 @@ class Form(BaseModel):
 
     medical_history = models.JSONField()  # flexible, structured later
 
-    # Should move this to response, as it doesn't make sense here
-    # response = models.TextField(blank=True, null=True)  # latest consolidated response
-    # status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="yellow")
+    response = models.TextField(blank=True, null=True)  # latest consolidated response
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="yellow")
 
     def __str__(self):
         return f"Form {self.id} for {self.patient}"
@@ -33,7 +32,7 @@ class Response(BaseModel):
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name="responses")
     ai_response_text = models.TextField()
     updated_response = models.TextField()
-    status = models.CharField(max_length=20, default="draft")
+    status = models.CharField(max_length=20, default="yellow")
     
 
     def __str__(self):

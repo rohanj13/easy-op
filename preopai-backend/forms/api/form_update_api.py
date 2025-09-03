@@ -7,6 +7,8 @@ from drf_yasg.utils import swagger_auto_schema
 class FormUpdateApi(APIView):
     class InputSerializer(serializers.Serializer):
         medical_history = serializers.JSONField()
+        response = serializers.CharField()
+        status = serializers.CharField()
 
     @swagger_auto_schema(request_body=InputSerializer)
     def post(self, request, id):
