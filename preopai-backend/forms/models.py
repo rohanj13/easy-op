@@ -36,4 +36,4 @@ class Response(BaseModel):
     
 
     def __str__(self):
-        return f"Response {self.id} ({self.response_type})"
+        return f"Response {self.id}"
