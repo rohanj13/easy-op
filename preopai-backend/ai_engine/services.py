@@ -1,5 +1,6 @@
 from forms.models import Form, Response
 from forms.selectors import form_get
+from ai_engine.selectors import response_get
 
 def get_ai_response(medical_history):
     return "AI Response"
@@ -39,3 +40,26 @@ def run_ai_analysis(
     response.save()
     # Return Response Object
     return response
+
+def response_update(
+    *,
+    id,
+    updated_response: str = None,
+    status: str = None,
+) -> Response:
+    response_obj = response_get(id=id)
+    form = response_obj.form
+
+    # Update response text if provided
+    if updated_response is not None:
+        response_obj.updated_response = updated_response
+        form.response = updated_response
+
+    # Update status if provided
+    if status is not None:
+        response_obj.status = status
+        form.status = status
+
+    response_obj.save()
+    form.save()
+    return response_obj
