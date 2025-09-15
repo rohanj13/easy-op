@@ -19,6 +19,9 @@ from forms.api.form_create_api import FormCreateApi
 from forms.api.form_detail_api import FormDetailApi
 from forms.api.form_update_api import FormUpdateApi
 from ai_engine.api.analyse_api import generate_response_api
+from ai_engine.api.response_detail_api import ResponseDetailApi
+from ai_engine.api.response_update_api import ResponseUpdateApi
+from ai_engine.api.response_list_api import ResponseListApi
 
 
 patient_patterns = [
@@ -47,6 +50,12 @@ ai_patterns = [
     path('generate/', generate_response_api.as_view(), name='generate-response'),
 ]
 
+response_patterns = [
+    path('', ResponseListApi.as_view(), name='list'),
+    path('<uuid:id>/update/', ResponseUpdateApi.as_view(), name='update'),
+    path('<uuid:id>/', ResponseDetailApi.as_view(), name='detail'),
+]
+
 # Swagger schema view setup
 schema_view = get_schema_view(
     openapi.Info(
@@ -64,6 +73,7 @@ urlpatterns = [
     path('patients/', include((patient_patterns, 'patients'))),
     path('forms/', include((form_patterns, 'forms'))),
     path('ai/', include((ai_patterns, 'ai'))),
+    path('responses/', include((response_patterns, 'responses'))),
     # Swagger/OpenAPI endpoints:
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
