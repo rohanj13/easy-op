@@ -17,13 +17,14 @@ class Form(BaseModel):
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name="forms")
 
     medical_history = models.JSONField()  # flexible, structured later
+
     response = models.TextField(blank=True, null=True)  # latest consolidated response
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="draft")
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="yellow")
 
     def __str__(self):
         return f"Form {self.id} for {self.patient}"
     
-
+# Move to AI engine app, as this only stores upon AI endpoint running
 class Response(BaseModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     form = models.ForeignKey(Form, on_delete=models.CASCADE, related_name="responses")
@@ -31,8 +32,8 @@ class Response(BaseModel):
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name="responses")
     ai_response_text = models.TextField()
     updated_response = models.TextField()
-    status = models.CharField(max_length=20, default="draft")
+    status = models.CharField(max_length=20, default="yellow")
     
 
     def __str__(self):
-        return f"Response {self.id} ({self.response_type})"
+        return f"Response {self.id}"
