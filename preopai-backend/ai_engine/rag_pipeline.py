@@ -11,7 +11,7 @@ pc = Pinecone(
     # environment="gcp-starter"
 )
 index_name = "preopai-index-py"
-
+embed_model = "text-embedding-3-small"
 index = pc.Index(index_name)
 index.describe_index_stats()
 
