@@ -1,7 +1,7 @@
 from forms.models import Form, Response
 from forms.selectors import form_get
 from ai_engine.selectors import response_get
-from rag_pipeline import run_rag_pipeline
+from ai_engine.rag_pipeline import run_rag_pipeline
 
 # def get_ai_response(medical_history):
 #     return "AI Response"
