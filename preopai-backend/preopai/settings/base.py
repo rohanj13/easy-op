@@ -24,6 +24,7 @@ INSTALLED_APPS = [
     "drf_yasg",
     "pinecone",
     "openai",
+    "reportlab",
     # local apps
     "hospitals",
     "patients",

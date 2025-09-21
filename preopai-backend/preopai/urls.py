@@ -18,6 +18,7 @@ from forms.api.form_list_api import FormListApi
 from forms.api.form_create_api import FormCreateApi
 from forms.api.form_detail_api import FormDetailApi
 from forms.api.form_update_api import FormUpdateApi
+from forms.api.form_export_api import FormExportApi
 from ai_engine.api.analyse_api import generate_response_api
 from ai_engine.api.response_detail_api import ResponseDetailApi
 from ai_engine.api.response_update_api import ResponseUpdateApi
@@ -44,6 +45,7 @@ form_patterns = [
     path('create/', FormCreateApi.as_view(), name='create'),
     path('<uuid:id>/update/', FormUpdateApi.as_view(), name='update'),
     path('<uuid:id>/', FormDetailApi.as_view(), name='detail'),
+    path('form/<uuid:id>/export/', FormExportApi.as_view(), name='form-export')
 ]
 
 ai_patterns = [
