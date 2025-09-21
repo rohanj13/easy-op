@@ -1,9 +1,10 @@
 from forms.models import Form, Response
 from forms.selectors import form_get
 from ai_engine.selectors import response_get
+from ai_engine.rag_pipeline import run_rag_pipeline
 
-def get_ai_response(medical_history):
-    return "AI Response"
+# def get_ai_response(medical_history):
+#     return "AI Response"
 
 def parse_status(response):
     return "Yellow"
@@ -19,7 +20,7 @@ def run_ai_analysis(
     # hospital = hospital_get(id=form.hospital.id)
     # patient = patient_get(id=form.patient.id)
 
-    response_text = get_ai_response(form.medical_history)
+    response_text = run_rag_pipeline(form.medical_history)
     status = parse_status(response_text)
     # Create new response object
     response = Response(
