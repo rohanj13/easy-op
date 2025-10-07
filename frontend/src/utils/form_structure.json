@@ -1,0 +1,223 @@
+{
+  "formTitle": "Preoperative Evaluation",
+  "sections": [
+    {
+      "title": "Patient Demographics",
+      "fields": [
+        {
+          "name": "fullName",
+          "label": "Full Name",
+          "type": "input",
+          "required": true
+        },
+        {
+          "name": "dob",
+          "label": "Date of Birth",
+          "type": "date",
+          "required": true
+        },
+        {
+          "name": "sex",
+          "label": "Sex",
+          "type": "select",
+          "options": ["Male", "Female", "Other"],
+          "required": true
+        },
+        { "name": "hospital", "label": "Hospital", "type": "input" },
+        { "name": "procedure", "label": "Planned Procedure", "type": "input" },
+        {
+          "name": "urgency",
+          "label": "Urgency",
+          "type": "radio",
+          "options": ["Elective", "Urgent"]
+        }
+      ]
+    },
+    {
+      "title": "Surgical & Anaesthetic History",
+      "fields": [
+        {
+          "name": "pastSurgeries",
+          "label": "Past Surgeries",
+          "type": "textarea"
+        },
+        {
+          "name": "previousAnaesthesia",
+          "label": "Previous Anaesthetic Complications",
+          "type": "checkboxGroup",
+          "options": [
+            "Difficult Airway",
+            "PONV",
+            "Malignant Hyperthermia",
+            "Awareness"
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Medical History",
+      "fields": [
+        {
+          "name": "cardiovascular",
+          "label": "Cardiovascular",
+          "type": "checkboxGroup",
+          "options": [
+            "Hypertension",
+            "IHD",
+            "Heart Failure",
+            "Arrhythmia",
+            "Valve Disease"
+          ]
+        },
+        {
+          "name": "respiratory",
+          "label": "Respiratory",
+          "type": "checkboxGroup",
+          "options": ["Asthma", "COPD", "OSA", "Recent Infection"]
+        },
+        {
+          "name": "neurological",
+          "label": "Neurological",
+          "type": "checkboxGroup",
+          "options": ["Epilepsy", "Stroke/TIA", "Neuromuscular Disorder"]
+        },
+        {
+          "name": "endocrine",
+          "label": "Endocrine",
+          "type": "checkboxGroup",
+          "options": ["Diabetes", "Thyroid Disorder", "Obesity"]
+        },
+        {
+          "name": "renal",
+          "label": "Renal",
+          "type": "checkboxGroup",
+          "options": ["CKD", "Dialysis", "Transplant"]
+        },
+        {
+          "name": "hepatic",
+          "label": "Hepatic",
+          "type": "checkboxGroup",
+          "options": ["Hepatitis", "Cirrhosis"]
+        },
+        { "name": "otherConditions", "label": "Other", "type": "textarea" }
+      ]
+    },
+    {
+      "title": "Functional Status",
+      "fields": [
+        {
+          "name": "exerciseTolerance",
+          "label": "Exercise Tolerance (METS)",
+          "type": "select",
+          "options": ["<4", "4-7", ">7"]
+        },
+        { "name": "stopBang", "label": "STOP-BANG Score", "type": "number" },
+        { "name": "mobility", "label": "Mobility/ADLs", "type": "input" }
+      ]
+    },
+    {
+      "title": "Medications & Allergies",
+      "fields": [
+        {
+          "name": "medications",
+          "label": "Current Medications",
+          "type": "textarea"
+        },
+        {
+          "name": "anticoagulants",
+          "label": "On Anticoagulants?",
+          "type": "switch"
+        },
+        { "name": "allergies", "label": "Allergies", "type": "textarea" }
+      ]
+    },
+    {
+      "title": "Social History",
+      "fields": [
+        {
+          "name": "smoking",
+          "label": "Smoking Status",
+          "type": "select",
+          "options": ["Current", "Former", "Never"]
+        },
+        { "name": "alcohol", "label": "Alcohol Intake", "type": "input" },
+        { "name": "drugs", "label": "Recreational Drugs", "type": "input" },
+        { "name": "socialSupport", "label": "Social Support", "type": "input" }
+      ]
+    },
+    {
+      "title": "Examination Findings",
+      "fields": [
+        { "name": "airway", "label": "Airway Assessment", "type": "textarea" },
+        { "name": "vitals", "label": "Vitals", "type": "textarea" },
+        { "name": "examNotes", "label": "Other Findings", "type": "textarea" }
+      ]
+    },
+    {
+      "title": "Investigations",
+      "fields": [
+        { "name": "bloods", "label": "Blood Tests", "type": "textarea" },
+        { "name": "ecg", "label": "ECG", "type": "input" },
+        { "name": "imaging", "label": "Imaging", "type": "textarea" }
+      ]
+    },
+    {
+      "title": "Risk Assessments",
+      "fields": [
+        {
+          "name": "asa",
+          "label": "ASA Class",
+          "type": "select",
+          "options": ["I", "II", "III", "IV", "V"]
+        },
+        { "name": "rcri", "label": "RCRI", "type": "number" },
+        { "name": "frailty", "label": "Frailty Score", "type": "number" }
+      ]
+    },
+    {
+      "title": "Anaesthesia Plan",
+      "fields": [
+        {
+          "name": "technique",
+          "label": "Planned Technique",
+          "type": "select",
+          "options": ["GA", "RA", "Sedation", "Combined"]
+        },
+        { "name": "airwayPlan", "label": "Airway Plan", "type": "input" },
+        {
+          "name": "postOpCare",
+          "label": "Post-op Care Plan",
+          "type": "select",
+          "options": ["PACU", "HDU", "ICU"]
+        },
+        { "name": "analgesia", "label": "Analgesia Plan", "type": "textarea" }
+      ]
+    },
+    {
+      "title": "Consent & Notes",
+      "fields": [
+        {
+          "name": "risksDiscussed",
+          "label": "Risks Discussed",
+          "type": "checkboxGroup",
+          "options": ["PONV", "Awareness", "Transfusion", "ICU Admission"]
+        },
+        {
+          "name": "patientConcerns",
+          "label": "Patient Concerns",
+          "type": "textarea"
+        },
+        {
+          "name": "clinicianNotes",
+          "label": "Clinician Notes",
+          "type": "textarea"
+        },
+        {
+          "name": "signOff",
+          "label": "Clinician Name/Signature",
+          "type": "input"
+        }
+      ]
+    }
+  ]
+}

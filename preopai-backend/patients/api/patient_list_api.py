@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from rest_framework import serializers
 from patients.selectors import patient_list
 from drf_yasg.utils import swagger_auto_schema
+from patients.serializers import PatientSerializer
 
 class PatientListApi(APIView):
     class PatientListSerializer(serializers.Serializer):
@@ -14,8 +15,12 @@ class PatientListApi(APIView):
         email = serializers.EmailField()
         hospital_id = serializers.UUIDField()
 
-    @swagger_auto_schema()
+    @swagger_auto_schema(
+        responses={
+            200: PatientSerializer(many=True)
+        }
+    )
     def get(self, request):
         patients = patient_list()
         data = self.PatientListSerializer(patients, many=True).data
-        return Response(data)
+        return Response(PatientSerializer(patients, many=True).data)

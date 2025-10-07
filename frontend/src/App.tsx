@@ -1,27 +1,19 @@
 // App.tsx
-import React from 'react';
-import { Routes, Route } from 'react-router-dom';
-import LandingPage from './pages/LandingPage';
-import Login from './pages/LoginPage';
-import Register from './pages/RegisterPage';
-import PreopForm from './pages/PreopForm';
-import DoctorDashboard from './pages/DoctorDashboard';
-import PatientDetailsView from './pages/DetailView';
 
-const About = () => <div>About Page</div>;
+import { Routes, Route } from "react-router-dom";
+import PatientsScreen from "./pages/PatientsList";
+import Dashboard from "./pages/Dashboard";
+import CreatePatient from "./pages/PatientForm";
+//import DummyScreen from "./screens/DummyScreen";
 
-const App: React.FC = () => {
+function App() {
   return (
     <Routes>
-      <Route path="/" element={<LandingPage />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
-      <Route path="/about" element={<About />} />
-      <Route path="/newform" element={<PreopForm/>} />
-      <Route path="/doctordashboard" element={<DoctorDashboard/>} />
-      <Route path="/assessment/:id" element={<PatientDetailsView/>} />
+      <Route path="/" element={<Dashboard />} />
+      <Route path="/patients" element={<PatientsScreen />} />
+      <Route path="/patients/new" element={<CreatePatient />} />
     </Routes>
   );
-};
+}
 
 export default App;

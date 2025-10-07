@@ -3,6 +3,8 @@ from rest_framework.response import Response
 from rest_framework import serializers, status
 from forms.services import form_create
 from drf_yasg.utils import swagger_auto_schema
+from forms.serializers import FormSerializer
+
 
 class FormCreateApi(APIView):
     class FormCreateSerializer(serializers.Serializer):
@@ -12,9 +14,9 @@ class FormCreateApi(APIView):
         # response = serializers.CharField()
         # status = serializers.CharField()
 
-    @swagger_auto_schema(request_body=FormCreateSerializer)
+    @swagger_auto_schema(request_body=FormCreateSerializer, responses={200: FormSerializer})
     def post(self, request):
         serializer = self.FormCreateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         form = form_create(**serializer.validated_data)
-        return Response({"id": str(form.id)}, status=status.HTTP_201_CREATED)
+        return Response(FormSerializer(form).data, status=status.HTTP_201_CREATED)
