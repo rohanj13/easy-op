@@ -27,5 +27,6 @@ class PatientCreateApi(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
         data = {**serializer.validated_data, "hospital_id": hospital_id}
+        print(hospital_id)
         patient = patient_create(**data)
         return Response(PatientSerializer(patient).data, status=status.HTTP_201_CREATED)
