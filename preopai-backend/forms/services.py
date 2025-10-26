@@ -36,17 +36,11 @@ def form_create(
 def form_update(
     *,
     id,
-    medical_history: str,
-    response: str,
-    status: str,
+    medical_history: str
 ) -> Form:
     form = form_get(id=id)
     if medical_history is not None:
         form.medical_history = medical_history
-    if response is not None:
-        form.response = response
-    if status is not None:
-        form.status = status
         
     form.save()
     return form

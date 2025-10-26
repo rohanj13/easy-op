@@ -10,7 +10,6 @@ class FormUpdateApi(APIView):
 
     class InputSerializer(serializers.Serializer):
         medical_history = serializers.JSONField(required=False)
-        
 
     @swagger_auto_schema(request_body=InputSerializer, responses={200: FormSerializer})
     def put(self, request, id):
