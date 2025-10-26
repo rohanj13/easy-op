@@ -16,11 +16,7 @@ class PatientListApi(APIView):
     #     email = serializers.EmailField()
     #     hospital_id = serializers.UUIDField()
 
-    @swagger_auto_schema(
-        responses={
-            200: PatientSerializer(many=True)
-        }
-    )
+    @swagger_auto_schema()
     def get(self, request):
         patients = patient_list()
         # data = self.PatientListSerializer(patients, many=True).data

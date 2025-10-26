@@ -9,7 +9,7 @@ class FormListApi(APIView):
     class FormListSerializer(serializers.Serializer):
         id = serializers.UUIDField()
        
-    @swagger_auto_schema(responses={200: FormSerializer(many=True)})
+    @swagger_auto_schema()
     def get(self, request):
         forms = form_list()
         # data = self.FormListSerializer(forms, many=True).data

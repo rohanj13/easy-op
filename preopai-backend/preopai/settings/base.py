@@ -25,7 +25,6 @@ INSTALLED_APPS = [
     "pinecone",
     "openai",
     "reportlab",
-    "corsheaders",
     # local apps
     "hospitals",
     "patients",

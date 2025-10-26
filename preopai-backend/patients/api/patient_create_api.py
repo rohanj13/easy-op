@@ -14,10 +14,10 @@ class PatientCreateApi(APIView):
         ethnicity = serializers.CharField()
         phone = serializers.CharField()
         email = serializers.EmailField()
-        # hospital_id = serializers.UUIDField()
+        hospital_id = serializers.UUIDField()
 
 
-    @swagger_auto_schema(request_body=PatientCreateSerializer, response=PatientSerializer)
+    @swagger_auto_schema(request_body=PatientCreateSerializer)
     def post(self, request):
         serializer = self.PatientCreateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)

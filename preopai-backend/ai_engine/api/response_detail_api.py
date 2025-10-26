@@ -1,15 +1,20 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from drf_yasg.utils import swagger_auto_schema
-from forms.serializers import ResponseSerializer
+from rest_framework import serializers
 from ai_engine.selectors import response_get
+from drf_yasg.utils import swagger_auto_schema
 
 class ResponseDetailApi(APIView):
-    @swagger_auto_schema(
-        responses={
-            200: ResponseSerializer()
-        }
-    )
+    class ResponseDetailSerializer(serializers.Serializer):
+        form_id = serializers.UUIDField()
+        hospital_id = serializers.UUIDField()
+        patient_id = serializers.UUIDField()
+        ai_response_text = serializers.CharField()
+        updated_response = serializers.CharField()
+        status = serializers.CharField()
+        
+    @swagger_auto_schema()
     def get(self, request, id):
-        response_obj = response_get(id=id)
-        return Response(ResponseSerializer(response_obj).data)
+        response = response_get(id=id)
+        data = self.ResponseDetailSerializer(response).data
+        return Response(data)

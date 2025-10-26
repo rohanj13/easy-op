@@ -15,7 +15,7 @@ class FormCreateApi(APIView):
         surgery_id = serializers.UUIDField()
         medical_history = serializers.JSONField()
 
-    @swagger_auto_schema(request_body=FormCreateSerializer, responses={200: FormSerializer})
+    @swagger_auto_schema(request_body=FormCreateSerializer)
     def post(self, request):
         serializer = self.FormCreateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)

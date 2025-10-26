@@ -14,7 +14,7 @@ class FormDetailApi(APIView):
         response = serializers.CharField()
         status = serializers.CharField()
         
-    @swagger_auto_schema(responses={200: FormSerializer})
+    @swagger_auto_schema()
     def get(self, request, id):
         form = form_get(id=id)
         # data = self.FormDetailSerializer(form).data

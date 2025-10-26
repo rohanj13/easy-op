@@ -17,4 +17,4 @@ class FormUpdateApi(APIView):
         serializer = self.InputSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         form = form_update(id=id, **serializer.validated_data)
-        return Response(FormSerializer(form).data)
+        return Response({"id": str(form.id)})
