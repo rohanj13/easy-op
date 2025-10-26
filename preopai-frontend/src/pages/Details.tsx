@@ -8,24 +8,26 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { StatusBadge } from "@/components/StatusBadge";
 import { ArrowLeft, Edit, FileDown, Loader2 } from "lucide-react";
-import { api } from "@/lib/api-client";
-import { medicalHistorySchema } from "@/utils/medical-history-schema";
-import { Form, Patient, Response } from "@/lib/api-types";
+import { api } from "@/api/api-client";
+import { preOpFormSchema } from "@/utils/medical-history-schema"; // Assuming this is the updated simplified schema
+import { Form, Patient, Surgery } from "@/api/api-types";
 import { toast } from "sonner";
  
 const Details = () => {
   const { id } = useParams<{ id: string }>();
   const [form, setForm] = useState<Form | null>(null);
   const [patient, setPatient] = useState<Patient | null>(null);
+  const [surgery, setSurgery] = useState<Surgery | null>(null);
   const [response, setResponse] = useState<string | null>(null);
-  //const [AIresponse, setAIResponse] = useState<Response | null>(null);
   const [loading, setLoading] = useState(true);
   const [assessing, setAssessing] = useState(false);
-  const [editing, setEditing] = useState<'patient' | 'form' | null>(null);
+  const [editing, setEditing] = useState<'patient' | 'surgery' | 'form' | null>(null);
 
   // Edit states
   const [editedPatient, setEditedPatient] = useState<Patient | null>(null);
-  const [editedMedicalHistory, setEditedMedicalHistory] = useState<object>(null);
+  const [editedSurgery, setEditedSurgery] = useState<Surgery | null>(null);
+  // Type is simplified as the medical history is now mostly key: string | number
+  const [editedMedicalHistory, setEditedMedicalHistory] = useState<Record<string, string | number | null>>({});
 
   useEffect(() => {
     if (id) {
@@ -51,15 +53,22 @@ const Details = () => {
         setEditedPatient(patientResponse.data);
       }
 
+      // Load surgery
+      if (formData?.surgery) {
+        const surgeryResponse = await api.surgeries.surgeriesRead(formData.surgery);
+        setSurgery(surgeryResponse.data);
+        setEditedSurgery(surgeryResponse.data);
+      }
+
       // Load response if exists
       setResponse(formData?.response || null);
-      // const responseData = formData?.id ? await api.responses.responsesRead(formData.id) : null;
-      // if (responseData?.data) {
-      //   setAIResponse(responseData.data);
-      // }
 
       if (formData?.medical_history) {
-        setEditedMedicalHistory(formData.medical_history);
+        // Initialize edited state with the loaded data
+        setEditedMedicalHistory(formData.medical_history as Record<string, string | number | null>);
+      } else {
+        // Fallback for forms without data (should not happen if form was just created)
+        setEditedMedicalHistory({});
       }
     } catch (error) {
       console.error('Error loading data:', error);
@@ -90,16 +99,13 @@ const Details = () => {
   };
 
   const handleExportPDF = async () => {
-  if (!id) return;
+    if (!id) return;
 
     try {
       const response = await api.forms.formsFormExportList(id);
 
-      // response.data is a Blob now
       const blob = response.data;
       const url = window.URL.createObjectURL(blob);
-
-      // Optional: extract filename from headers if you modify request() to return headers
       const fileName = `form_${id}.pdf`;
 
       const link = document.createElement("a");
@@ -115,7 +121,7 @@ const Details = () => {
       console.error("Error exporting PDF:", error);
       toast.error("Failed to export PDF");
     }
-};
+  };
 
   const handleUpdatePatient = async () => {
     if (!patient?.id || !editedPatient) return;
@@ -126,6 +132,7 @@ const Details = () => {
         last_name: editedPatient.last_name,
         dob: editedPatient.dob,
         sex: editedPatient.sex,
+        ethnicity: editedPatient.ethnicity,
         phone: editedPatient.phone || '',
         email: editedPatient.email || '',
       });
@@ -139,10 +146,31 @@ const Details = () => {
     }
   };
 
+  const handleUpdateSurgery = async () => {
+    if (!surgery?.id || !editedSurgery) return;
+
+    try {
+      await api.surgeries.surgeriesUpdateCreate(surgery.id, {
+        name: editedSurgery.name,
+        side: editedSurgery.side || null,
+        indication: editedSurgery.indication || '',
+        scheduled_date: editedSurgery.scheduled_date || null,
+      });
+      
+      toast.success('Surgery updated successfully');
+      setEditing(null);
+      await loadData();
+    } catch (error) {
+      console.error('Error updating surgery:', error);
+      toast.error('Failed to update surgery');
+    }
+  };
+
   const handleUpdateForm = async () => {
     if (!id || !editedMedicalHistory) return;
 
     try {
+      // API expects the medical_history to be an object
       await api.forms.formsUpdateCreate(id, {
         medical_history: editedMedicalHistory,
       });
@@ -214,8 +242,9 @@ const Details = () => {
 
       <main className="container mx-auto px-4 py-8 max-w-7xl">
         <div className="grid lg:grid-cols-2 gap-6">
-          {/* Left Column - Patient Info & Medical History */}
+          {/* Left Column - Patient Info, Surgery Info & Medical History */}
           <div className="space-y-6">
+            
             {/* Patient Information */}
             <Card className="p-6">
               <div className="flex items-start justify-between mb-4">
@@ -298,6 +327,18 @@ const Details = () => {
                 </div>
 
                 <div>
+                  <Label>Ethnicity</Label>
+                  {editing === 'patient' ? (
+                    <Input
+                      value={editedPatient?.ethnicity || ''}
+                      onChange={(e) => setEditedPatient(prev => prev ? { ...prev, ethnicity: e.target.value } : null)}
+                    />
+                  ) : (
+                    <p className="text-foreground mt-1">{patient.ethnicity}</p>
+                  )}
+                </div>
+
+                <div>
                   <Label>Phone</Label>
                   {editing === 'patient' ? (
                     <Input
@@ -324,6 +365,84 @@ const Details = () => {
               </div>
             </Card>
 
+            {/* Surgery Information */}
+            {surgery && (
+              <Card className="p-6">
+                <div className="flex items-start justify-between mb-4">
+                  <div>
+                    <h2 className="text-2xl font-bold text-foreground">Surgery Information</h2>
+                    <p className="text-sm text-muted-foreground mt-1">Planned surgical procedure details</p>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      if (editing === 'surgery') {
+                        handleUpdateSurgery();
+                      } else {
+                        setEditing('surgery');
+                      }
+                    }}
+                  >
+                    {editing === 'surgery' ? 'Save' : <><Edit className="h-4 w-4 mr-2" />Edit</>}
+                  </Button>
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <Label>Surgery Name</Label>
+                    {editing === 'surgery' ? (
+                      <Input
+                        value={editedSurgery?.name || ''}
+                        onChange={(e) => setEditedSurgery(prev => prev ? { ...prev, name: e.target.value } : null)}
+                      />
+                    ) : (
+                      <p className="text-foreground mt-1">{surgery.name}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <Label>Side</Label>
+                    {editing === 'surgery' ? (
+                      <Input
+                        value={editedSurgery?.side || ''}
+                        onChange={(e) => setEditedSurgery(prev => prev ? { ...prev, side: e.target.value } : null)}
+                        placeholder="e.g., Left, Right, Bilateral"
+                      />
+                    ) : (
+                      <p className="text-foreground mt-1">{surgery.side || '-'}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <Label>Scheduled Date</Label>
+                    {editing === 'surgery' ? (
+                      <Input
+                        type="date"
+                        value={editedSurgery?.scheduled_date || ''}
+                        onChange={(e) => setEditedSurgery(prev => prev ? { ...prev, scheduled_date: e.target.value } : null)}
+                      />
+                    ) : (
+                      <p className="text-foreground mt-1">{surgery.scheduled_date || '-'}</p>
+                    )}
+                  </div>
+
+                  <div className="md:col-span-2">
+                    <Label>Indication</Label>
+                    {editing === 'surgery' ? (
+                      <Textarea
+                        value={editedSurgery?.indication || ''}
+                        onChange={(e) => setEditedSurgery(prev => prev ? { ...prev, indication: e.target.value } : null)}
+                        rows={3}
+                      />
+                    ) : (
+                      <p className="text-foreground mt-1 whitespace-pre-wrap">{surgery.indication || '-'}</p>
+                    )}
+                  </div>
+                </div>
+              </Card>
+            )}
+
             {/* Medical History */}
             <Card className="p-6">
               <div className="flex items-start justify-between mb-4">
@@ -346,11 +465,15 @@ const Details = () => {
                 </Button>
               </div>
 
-              {medicalHistorySchema.sections.map((section) => (
+              {preOpFormSchema.sections.map((section) => (
                 <div key={section.title} className="mb-6 border rounded-lg p-4">
                   <h3 className="text-lg font-semibold mb-3">{section.title}</h3>
+                  
+                  {/* Apply grid only for Vitals section fields */}
+                  <div className={section.title === "Vitals & Measurements" ? "grid md:grid-cols-3 gap-4" : "space-y-4"}>
                   {section.fields.map((field) => {
-                    const value = (editedMedicalHistory as object)?.[field.key] ?? "";
+                    // Use a more robust type for the value
+                    const value = editedMedicalHistory?.[field.key] ?? "";
 
                     if (field.type === "text" || field.type === "number") {
                       return (
@@ -359,9 +482,9 @@ const Details = () => {
                           {editing === "form" ? (
                             <Input
                               type={field.type}
-                              value={value}
+                              value={value || ''}
                               onChange={(e) =>
-                                setEditedMedicalHistory((prev: object) => ({
+                                setEditedMedicalHistory((prev) => ({
                                   ...prev,
                                   [field.key]: e.target.value,
                                 }))
@@ -374,15 +497,39 @@ const Details = () => {
                       );
                     }
 
+                    if (field.type === "textarea") { // ⭐ NEW: Handle textarea fields
+                      return (
+                        <div key={field.key} className="mb-3">
+                          <Label>{field.label}</Label>
+                          {editing === "form" ? (
+                            <Textarea
+                              value={value || ''}
+                              onChange={(e) =>
+                                setEditedMedicalHistory((prev) => ({
+                                  ...prev,
+                                  [field.key]: e.target.value,
+                                }))
+                              }
+                              rows={4}
+                            />
+                          ) : (
+                            // Use whitespace-pre-wrap to respect newline formatting in saved text
+                            <p className="text-foreground mt-1 whitespace-pre-wrap">{value || "-"}</p> 
+                          )}
+                        </div>
+                      );
+                    }
+
                     if (field.type === "select") {
+                      const stringValue = String(value) || '';
                       return (
                         <div key={field.key} className="mb-3">
                           <Label>{field.label}</Label>
                           {editing === "form" ? (
                             <Select
-                              value={value}
+                              value={stringValue}
                               onValueChange={(val) =>
-                                setEditedMedicalHistory((prev: object) => ({
+                                setEditedMedicalHistory((prev) => ({
                                   ...prev,
                                   [field.key]: val,
                                 }))
@@ -406,94 +553,9 @@ const Details = () => {
                       );
                     }
 
-                    if (field.type === "array") {
-                      const items = value || [];
-
-                      return (
-                        <div key={field.key} className="mb-3">
-                          <Label>{field.label}</Label>
-                          {editing === "form" ? (
-                            <>
-                              {items.map((item: string, idx: number) => (
-                                <div key={idx} className="mt-2 border p-2 rounded-lg bg-muted">
-                                  {field.itemFields ? (
-                                    field.itemFields.map((sub) => (
-                                      <Input
-                                        key={sub.key}
-                                        type={sub.type}
-                                        placeholder={sub.label}
-                                        value={item[sub.key] || ""}
-                                        onChange={(e) => {
-                                          const updated = [...items];
-                                          updated[idx] = {
-                                            ...updated[idx],
-                                            [sub.key]: e.target.value,
-                                          };
-                                          setEditedMedicalHistory((prev: object) => ({
-                                            ...prev,
-                                            [field.key]: updated,
-                                          }));
-                                        }}
-                                        className="mb-2"
-                                      />
-                                    ))
-                                  ) : (
-                                    <Input
-                                      type="text"
-                                      value={item}
-                                      onChange={(e) => {
-                                        const updated = [...items];
-                                        updated[idx] = e.target.value;
-                                        setEditedMedicalHistory((prev: object) => ({
-                                          ...prev,
-                                          [field.key]: updated,
-                                        }));
-                                      }}
-                                    />
-                                  )}
-                                </div>
-                              ))}
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="sm"
-                                onClick={() =>
-                                  setEditedMedicalHistory((prev: object) => ({
-                                    ...prev,
-                                    [field.key]: [
-                                      ...(items || []),
-                                      field.itemFields ? {} : "",
-                                    ],
-                                  }))
-                                }
-                                className="mt-2"
-                              >
-                                + Add {field.label.slice(0, -1)}
-                              </Button>
-                            </>
-                          ) : (
-                            <div className="mt-2 space-y-1">
-                              {items.length > 0 ? (
-                                items.map((item: object, i: number) => (
-                                  <p key={i} className="text-foreground">
-                                    {typeof item === "string"
-                                      ? item
-                                      : Object.entries(item)
-                                          .map(([k, v]) => `${k}: ${v}`)
-                                          .join(", ")}
-                                  </p>
-                                ))
-                              ) : (
-                                <p className="text-muted-foreground">-</p>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      );
-                    }
-
                     return null;
                   })}
+                  </div> {/* End of grid/space-y container */}
                 </div>
               ))}
             </Card>
@@ -515,15 +577,10 @@ const Details = () => {
                   <div>
                     <Label>Pre-operative Analysis</Label>
                     <div className="mt-2 p-4 bg-muted rounded-lg">
+                      {/* Use whitespace-pre-wrap to respect newlines in AI response */}
                       <p className="text-foreground whitespace-pre-wrap">{response}</p>
                     </div>
                   </div>
-                  {/* <div>
-                    <Label>AI Response</Label>
-                    <div className="mt-2 p-4 bg-muted rounded-lg">
-                      <p className="text-foreground whitespace-pre-wrap">{AIresponse.ai_response_text}</p>
-                    </div>
-                  </div> */}
                 </div>
               ) : (
                 <div className="text-center py-8 text-muted-foreground">

@@ -2,6 +2,9 @@ from forms.models import Form, Response
 from forms.selectors import form_get
 from ai_engine.selectors import response_get
 from ai_engine.rag_pipeline import run_rag_pipeline
+from patients.selectors import patient_get
+from surgeries.selectors import surgery_get
+from datetime import date
 
 # def get_ai_response(medical_history):
 #     return "AI Response"
@@ -18,9 +21,12 @@ def run_ai_analysis(
     
     form = form_get(id=form_id)
     # hospital = hospital_get(id=form.hospital.id)
-    # patient = patient_get(id=form.patient.id)
-
-    response_text = run_rag_pipeline(form.medical_history)
+    patient = patient_get(id=form.patient.id)
+    surgery = surgery_get(id=form.surgery.id)
+    today = date.today()
+    age = today.year - patient.dob.year - ((today.month, today.day) < (patient.dob.month, patient.dob.day))
+    surgery_info = {"age": age, "ethnicity": patient.ethnicity, "surgery_name": surgery.name, "surgery_side": surgery.side, "surgery_indication": surgery.indication, "surgery_date": surgery.scheduled_date}
+    response_text = run_rag_pipeline(surgery_info, form.medical_history)
     status = parse_status(response_text)
     # Create new response object
     response = Response(

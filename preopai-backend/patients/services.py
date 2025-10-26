@@ -10,6 +10,7 @@ def patient_create(
     last_name: str,
     dob: date,
     sex: str,
+    ethnicity: str,
     phone: str = None,
     email: str = None
 ) -> Patient:
@@ -20,6 +21,7 @@ def patient_create(
         last_name=last_name,
         dob=dob,
         sex=sex,
+        ethnicity=ethnicity,
         phone=phone,
         email=email,
     )
@@ -33,6 +35,7 @@ def patient_update(
     last_name: str = None,
     dob = None,
     sex: str = None,
+    ethnicity: str = None,
     phone: str = None,
     email: str = None
 ) -> Patient:
@@ -45,6 +48,8 @@ def patient_update(
         patient.dob = dob
     if sex is not None:
         patient.sex = sex
+    if ethnicity is not None:
+        patient.ethnicity = ethnicity
     if phone is not None:
         patient.phone = phone
     if email is not None:

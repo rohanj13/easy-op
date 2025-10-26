@@ -9,6 +9,7 @@ class FormDetailApi(APIView):
     class FormDetailSerializer(serializers.Serializer):
         hospital_id = serializers.UUIDField()
         patient_id = serializers.UUIDField()
+        surgery_id = serializers.UUIDField()
         medical_history = serializers.JSONField()
         response = serializers.CharField()
         status = serializers.CharField()
@@ -16,5 +17,5 @@ class FormDetailApi(APIView):
     @swagger_auto_schema(responses={200: FormSerializer})
     def get(self, request, id):
         form = form_get(id=id)
-        data = self.FormDetailSerializer(form).data
+        # data = self.FormDetailSerializer(form).data
         return Response(FormSerializer(form).data)

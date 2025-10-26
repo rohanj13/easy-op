@@ -7,15 +7,16 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { ArrowLeft, Plus, Trash2 } from "lucide-react";
-import { api, DEMO_HOSPITAL_ID } from "@/lib/api-client";
-import { Patient, PatientCreate } from "@/lib/api-types";
+import { ArrowLeft } from "lucide-react"; // Removed Plus, Trash2
+import { api, DEMO_HOSPITAL_ID } from "@/api/api-client";
+import { Patient, PatientCreate, Surgery, SurgeryCreate } from "@/api/api-types";
 import { toast } from "sonner";
-import { medicalHistorySchema } from "@/utils/medical-history-schema";
+import { preOpFormSchema } from "@/utils/medical-history-schema"; // Assuming this is the updated simplified schema
 
-type Step = 'select' | 'new-patient' | 'existing-patient-form' | 'new-patient-form';
+// --- Types remain the same for file structure, but the array logic is unused ---
+type Step = 'select' | 'new-patient' | 'new-surgery' | 'existing-patient-surgery' | 'existing-patient-form' | 'new-patient-form';
 
-type MedicalHistoryValue = string | number | unknown[] | Record<string, unknown>;
+type MedicalHistoryValue = string | number; // Simplified: No longer includes array or Record types
 type MedicalHistoryState = Record<string, MedicalHistoryValue>;
 
 interface SchemaField {
@@ -23,15 +24,18 @@ interface SchemaField {
   label: string;
   type: string;
   options?: string[];
-  itemFields?: Array<{ key: string; label: string; type: string }>;
-  itemType?: string;
+  // itemFields and itemType are now unused from the old schema logic
 }
+// -------------------------------------------------------------------------------
+
 
 const NewForm = () => {
   const navigate = useNavigate();
   const [step, setStep] = useState<Step>('select');
   const [patients, setPatients] = useState<Patient[]>([]);
+  const [surgeries, setSurgeries] = useState<Surgery[]>([]);
   const [selectedPatientId, setSelectedPatientId] = useState<string>('');
+  const [selectedSurgeryId, setSelectedSurgeryId] = useState<string>('');
   const [loading, setLoading] = useState(false);
 
   // New patient form state
@@ -40,8 +44,17 @@ const NewForm = () => {
     last_name: '',
     dob: '',
     sex: 'M',
+    ethnicity: '',
     phone: '',
     email: '',
+  });
+
+  // New surgery form state
+  const [newSurgery, setNewSurgery] = useState<Omit<SurgeryCreate, 'hospital_id' | 'patient_id'>>({
+    name: '',
+    side: '',
+    indication: '',
+    scheduled_date: '',
   });
 
   // Dynamic medical history form state
@@ -52,19 +65,25 @@ const NewForm = () => {
     initializeMedicalHistory();
   }, []);
 
+  useEffect(() => {
+    if (selectedPatientId) {
+      loadSurgeriesForPatient(selectedPatientId);
+    }
+  }, [selectedPatientId]);
+
+  // 🐛 MODIFICATION: Updated to initialize all fields as empty strings, 
+  // since 'array' type fields were replaced by 'textarea' in the new schema.
   const initializeMedicalHistory = () => {
     const initialState: MedicalHistoryState = {};
-    medicalHistorySchema.sections.forEach((section) => {
+    preOpFormSchema.sections.forEach((section) => {
       section.fields.forEach((field) => {
-        if (field.type === 'array') {
-          initialState[field.key] = [];
-        } else {
-          initialState[field.key] = '';
-        }
+        // All fields are now text, number, or select, which initialize to '' or 0
+        initialState[field.key] = field.type === 'number' ? 0 : '';
       });
     });
     setMedicalHistory(initialState);
   };
+  // -----------------------------------------------------------------
 
   const loadPatients = async () => {
     try {
@@ -73,6 +92,17 @@ const NewForm = () => {
     } catch (error) {
       console.error('Error loading patients:', error);
       toast.error('Failed to load patients');
+    }
+  };
+
+  const loadSurgeriesForPatient = async (patientId: string) => {
+    try {
+      const response = await api.surgeries.surgeriesList();
+      const patientSurgeries = (response.data || []).filter(s => s.patient === patientId);
+      setSurgeries(patientSurgeries);
+    } catch (error) {
+      console.error('Error loading surgeries:', error);
+      toast.error('Failed to load surgeries');
     }
   };
 
@@ -85,7 +115,7 @@ const NewForm = () => {
         toast.success('Patient created successfully');
         const createdPatient = response.data as Patient;
         setSelectedPatientId(createdPatient.id || '');
-        setStep('new-patient-form');
+        setStep('new-surgery');
       }
     } catch (error) {
       console.error('Error creating patient:', error);
@@ -95,12 +125,51 @@ const NewForm = () => {
     }
   };
 
-  const handleCreateForm = async (patientId: string) => {
+  const handleCreateSurgery = async () => {
+    if (!selectedPatientId) {
+      toast.error('No patient selected');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const surgeryData: SurgeryCreate = {
+        hospital_id: DEMO_HOSPITAL_ID,
+        patient_id: selectedPatientId,
+        name: newSurgery.name,
+        side: newSurgery.side || null,
+        indication: newSurgery.indication,
+        scheduled_date: newSurgery.scheduled_date || null,
+      };
+
+      const response = await api.surgeries.surgeriesCreateCreate(surgeryData);
+      
+      if (response.data) {
+        toast.success('Surgery created successfully');
+        const createdSurgery = response.data as Surgery;
+        setSelectedSurgeryId(createdSurgery.id || '');
+        setStep(step === 'new-surgery' ? 'new-patient-form' : 'existing-patient-form');
+      }
+    } catch (error) {
+      console.error('Error creating surgery:', error);
+      toast.error('Failed to create surgery');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCreateForm = async () => {
+    if (!selectedPatientId || !selectedSurgeryId) {
+      toast.error('Patient and surgery are required');
+      return;
+    }
+
     try {
       setLoading(true);
       const response = await api.forms.formsCreateCreate({
-        hospital_id: DEMO_HOSPITAL_ID,
-        patient_id: patientId,
+        hospital: DEMO_HOSPITAL_ID,
+        patient: selectedPatientId,
+        surgery: selectedSurgeryId,
         medical_history: medicalHistory,
       });
 
@@ -120,36 +189,6 @@ const NewForm = () => {
     setMedicalHistory((prev) => ({ ...prev, [key]: value }));
   };
 
-  const addArrayItem = (key: string, itemFields?: Array<{ key: string; label: string; type: string }>) => {
-    const currentArray = (medicalHistory[key] as unknown[]) || [];
-    if (itemFields) {
-      const newItem: Record<string, string | number> = {};
-      itemFields.forEach((field) => {
-        newItem[field.key] = field.type === 'number' ? 0 : '';
-      });
-      updateFieldValue(key, [...currentArray, newItem]);
-    } else {
-      updateFieldValue(key, [...currentArray, '']);
-    }
-  };
-
-  const removeArrayItem = (key: string, index: number) => {
-    const currentArray = (medicalHistory[key] as unknown[]) || [];
-    updateFieldValue(key, currentArray.filter((_: unknown, i: number) => i !== index));
-  };
-
-  const updateArrayItem = (key: string, index: number, value: string) => {
-    const currentArray = [...((medicalHistory[key] as unknown[]) || [])];
-    currentArray[index] = value;
-    updateFieldValue(key, currentArray);
-  };
-
-  const updateArrayItemField = (key: string, index: number, fieldKey: string, value: string | number) => {
-    const currentArray = [...((medicalHistory[key] as Record<string, unknown>[]) || [])];
-    currentArray[index] = { ...currentArray[index], [fieldKey]: value };
-    updateFieldValue(key, currentArray);
-  };
-
   const renderField = (field: SchemaField) => {
     const value = medicalHistory[field.key];
 
@@ -162,6 +201,19 @@ const NewForm = () => {
               id={field.key}
               value={(value as string) || ''}
               onChange={(e) => updateFieldValue(field.key, e.target.value)}
+            />
+          </div>
+        );
+      
+      case 'textarea': // Added support for 'textarea'
+        return (
+          <div key={field.key}>
+            <Label htmlFor={field.key}>{field.label}</Label>
+            <Textarea
+              id={field.key}
+              value={(value as string) || ''}
+              onChange={(e) => updateFieldValue(field.key, e.target.value)}
+              rows={4} // Default rows for a medical history block
             />
           </div>
         );
@@ -197,87 +249,13 @@ const NewForm = () => {
             </Select>
           </div>
         );
-
-      case 'array':
-        { const arrayValue = (value as unknown[]) || [];
-        return (
-          <div key={field.key} className="space-y-3">
-            <div className="flex items-center justify-between">
-              <Label>{field.label}</Label>
-              <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                onClick={() => addArrayItem(field.key, field.itemFields)}
-              >
-                <Plus className="h-4 w-4 mr-1" />
-                Add {field.label}
-              </Button>
-            </div>
-            
-            {arrayValue.length === 0 && (
-              <p className="text-sm text-muted-foreground">No items added yet</p>
-            )}
-
-            {arrayValue.map((item: unknown, index: number) => (
-              <Card key={index} className="p-4">
-                <div className="flex gap-3 items-start">
-                  <div className="flex-1">
-                    {field.itemFields ? (
-                      <div className="grid md:grid-cols-2 gap-3">
-                        {field.itemFields.map((itemField) => {
-                          const itemRecord = item as Record<string, string | number>;
-                          return (
-                            <div key={itemField.key}>
-                              <Label htmlFor={`${field.key}-${index}-${itemField.key}`}>
-                                {itemField.label}
-                              </Label>
-                              <Input
-                                id={`${field.key}-${index}-${itemField.key}`}
-                                type={itemField.type === 'number' ? 'number' : 'text'}
-                                value={itemRecord[itemField.key] || ''}
-                                onChange={(e) =>
-                                  updateArrayItemField(
-                                    field.key,
-                                    index,
-                                    itemField.key,
-                                    itemField.type === 'number' ? Number(e.target.value) : e.target.value
-                                  )
-                                }
-                              />
-                            </div>
-                          );
-                        })}
-                      </div>
-                    ) : (
-                      <Input
-                        value={item as string}
-                        onChange={(e) => updateArrayItem(field.key, index, e.target.value)}
-                        placeholder={`Enter ${field.label}`}
-                      />
-                    )}
-                  </div>
-                  <Button
-                    type="button"
-                    size="icon"
-                    variant="ghost"
-                    className="text-destructive"
-                    onClick={() => removeArrayItem(field.key, index)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              </Card>
-            ))}
-          </div>
-        ); }
-
+      
       default:
         return null;
     }
   };
 
-  const renderMedicalHistoryForm = (patientId: string) => (
+  const renderMedicalHistoryForm = () => (
     <Card className="p-6 space-y-6">
       <div>
         <h2 className="text-2xl font-bold text-foreground mb-2">Medical History Form</h2>
@@ -285,13 +263,16 @@ const NewForm = () => {
       </div>
 
       <div className="space-y-8">
-        {medicalHistorySchema.sections.map((section, sectionIndex) => (
+        {preOpFormSchema.sections.map((section, sectionIndex) => (
           <div key={sectionIndex} className="space-y-4">
             <h3 className="text-lg font-semibold text-foreground border-b pb-2">
               {section.title}
             </h3>
             <div className="space-y-4">
-              {section.fields.map((field) => renderField(field))}
+              {/* Vitals fields in one row, history fields below */}
+              <div className={section.title === "Vitals & Measurements" ? "grid md:grid-cols-3 gap-4" : "space-y-4"}>
+                  {section.fields.map((field) => renderField(field))}
+              </div>
             </div>
           </div>
         ))}
@@ -301,8 +282,83 @@ const NewForm = () => {
         <Button onClick={() => setStep('select')} variant="outline">
           Back
         </Button>
-        <Button onClick={() => handleCreateForm(patientId)} disabled={loading}>
+        <Button onClick={handleCreateForm} disabled={loading}>
           {loading ? 'Creating...' : 'Create Form'}
+        </Button>
+      </div>
+    </Card>
+  );
+
+  const renderSurgeryForm = (isNewPatient: boolean) => (
+    <Card className="p-6 space-y-6">
+      <div>
+        <h2 className="text-2xl font-bold text-foreground mb-2">Surgery Information</h2>
+        <p className="text-muted-foreground">Enter details about the planned surgery</p>
+      </div>
+
+      <div className="space-y-4">
+        <div>
+          <Label htmlFor="surgeryName">Surgery Name *</Label>
+          <Input
+            id="surgeryName"
+            value={newSurgery.name}
+            onChange={(e) => setNewSurgery({ ...newSurgery, name: e.target.value })}
+            placeholder="e.g., Total Knee Replacement"
+          />
+        </div>
+
+        <div>
+          <Label htmlFor="side">Side</Label>
+          <Select 
+            value={newSurgery.side || ''} 
+            onValueChange={(value) => setNewSurgery({ ...newSurgery, side: value })}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Select side (if applicable)" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="Left">Left</SelectItem>
+              <SelectItem value="Right">Right</SelectItem>
+              <SelectItem value="Bilateral">Bilateral</SelectItem>
+              <SelectItem value="N/A">N/A</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div>
+          <Label htmlFor="scheduledDate">Scheduled Date</Label>
+          <Input
+            id="scheduledDate"
+            type="date"
+            value={newSurgery.scheduled_date || ''}
+            onChange={(e) => setNewSurgery({ ...newSurgery, scheduled_date: e.target.value })}
+          />
+        </div>
+
+        <div>
+          <Label htmlFor="indication">Indication *</Label>
+          <Textarea
+            id="indication"
+            value={newSurgery.indication}
+            onChange={(e) => setNewSurgery({ ...newSurgery, indication: e.target.value })}
+            placeholder="Reason for surgery"
+            rows={4}
+          />
+        </div>
+      </div>
+
+      <div className="flex gap-3">
+        <Button 
+          onClick={() => setStep(isNewPatient ? 'new-patient' : 'existing-patient-surgery')} 
+          variant="outline"
+        >
+          Back
+        </Button>
+        <Button 
+          onClick={handleCreateSurgery} 
+          disabled={loading || !newSurgery.name || !newSurgery.indication}
+        >
+          {loading ? 'Creating...' : 'Create Surgery & Continue'}
         </Button>
       </div>
     </Card>
@@ -333,7 +389,7 @@ const NewForm = () => {
 
             <RadioGroup value={step} onValueChange={(value) => setStep(value as Step)}>
               <div className="flex items-center space-x-2 p-4 border rounded-lg cursor-pointer hover:bg-muted/50">
-                <RadioGroupItem value="existing-patient-form" id="existing" />
+                <RadioGroupItem value="existing-patient-surgery" id="existing" />
                 <Label htmlFor="existing" className="flex-1 cursor-pointer">
                   <div className="font-medium">Existing Patient</div>
                   <div className="text-sm text-muted-foreground">Select from registered patients</div>
@@ -351,7 +407,7 @@ const NewForm = () => {
           </Card>
         )}
 
-        {step === 'existing-patient-form' && (
+        {step === 'existing-patient-surgery' && (
           <Card className="p-6 space-y-6">
             <div>
               <h2 className="text-2xl font-bold text-foreground mb-2">Select Patient</h2>
@@ -374,7 +430,51 @@ const NewForm = () => {
               </Select>
             </div>
 
-            {selectedPatientId && renderMedicalHistoryForm(selectedPatientId)}
+            {selectedPatientId && (
+              <>
+                <div className="space-y-4">
+                  <div>
+                    <Label>Surgery Selection</Label>
+                    <p className="text-sm text-muted-foreground mb-2">
+                      Select an existing surgery or create a new one
+                    </p>
+                  </div>
+
+                  {surgeries.length > 0 && (
+                    <div>
+                      <Label htmlFor="surgery">Existing Surgeries</Label>
+                      <Select value={selectedSurgeryId} onValueChange={setSelectedSurgeryId}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select an existing surgery" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {surgeries.map((surgery) => (
+                            <SelectItem key={surgery.id} value={surgery.id!}>
+                              {surgery.name} - {surgery.scheduled_date || 'No date'}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+
+                  <div className="flex gap-3">
+                    <Button onClick={() => setStep('select')} variant="outline">
+                      Back
+                    </Button>
+                    {selectedSurgeryId ? (
+                      <Button onClick={() => setStep('existing-patient-form')}>
+                        Continue to Form
+                      </Button>
+                    ) : (
+                      <Button onClick={() => setStep('new-surgery')} variant="outline">
+                        Create New Surgery
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </>
+            )}
 
             {!selectedPatientId && (
               <Button onClick={() => setStep('select')} variant="outline">
@@ -435,6 +535,15 @@ const NewForm = () => {
               </div>
 
               <div>
+                <Label htmlFor="ethnicity">Ethnicity</Label>
+                <Input
+                  id="ethnicity"
+                  value={newPatient.ethnicity}
+                  onChange={(e) => setNewPatient({ ...newPatient, ethnicity: e.target.value })}
+                />
+              </div>
+
+              <div>
                 <Label htmlFor="phone">Phone *</Label>
                 <Input
                   id="phone"
@@ -466,15 +575,38 @@ const NewForm = () => {
           </Card>
         )}
 
-        {step === 'new-patient-form' && newPatient.first_name && (
+        {step === 'new-surgery' && (
+          <>
+            {newPatient.first_name && (
+              <Card className="p-4 bg-accent/10 border-accent mb-4">
+                <p className="text-sm">
+                  Patient: <strong>{newPatient.first_name} {newPatient.last_name}</strong>
+                </p>
+              </Card>
+            )}
+            {renderSurgeryForm(!!newPatient.first_name)}
+          </>
+        )}
+
+        {step === 'new-patient-form' && (
           <div className="space-y-4">
             <Card className="p-4 bg-accent/10 border-accent">
               <p className="text-sm">
-                Patient <strong>{newPatient.first_name} {newPatient.last_name}</strong> created successfully. 
-                Now complete the pre-operative form.
+                <strong>{newPatient.first_name} {newPatient.last_name}</strong> - Surgery: <strong>{newSurgery.name}</strong>
               </p>
             </Card>
-            {renderMedicalHistoryForm(selectedPatientId)}
+            {renderMedicalHistoryForm()}
+          </div>
+        )}
+
+        {step === 'existing-patient-form' && selectedPatientId && selectedSurgeryId && (
+          <div className="space-y-4">
+            <Card className="p-4 bg-accent/10 border-accent">
+              <p className="text-sm">
+                Patient and surgery selected. Complete the medical history form below.
+              </p>
+            </Card>
+            {renderMedicalHistoryForm()}
           </div>
         )}
       </main>

@@ -11,6 +11,7 @@ class PatientCreateApi(APIView):
         last_name = serializers.CharField()
         dob = serializers.DateField()
         sex = serializers.ChoiceField(choices=["M", "F", "O"])
+        ethnicity = serializers.CharField()
         phone = serializers.CharField()
         email = serializers.EmailField()
         # hospital_id = serializers.UUIDField()

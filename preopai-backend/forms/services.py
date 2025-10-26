@@ -1,10 +1,11 @@
 from datetime import date
 import json
 import io
-from forms.models import Form
+from forms.models import Form, Surgery
 from forms.selectors import form_get
 from hospitals.selectors import hospital_get
 from patients.selectors import patient_get
+from surgeries.selectors import surgery_get
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import letter
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
@@ -17,27 +18,29 @@ def form_create(
     *,
     hospital_id: str,
     patient_id: str,
-    medical_history
+    surgery_id= str,
+    medical_history,
 ) -> Form:
     hospital = hospital_get(id=hospital_id)
     patient = patient_get(id=patient_id)
+    surgery = surgery_get(id=surgery_id)
     form = Form(
         hospital=hospital,
         patient=patient,
+        surgery=surgery,
         medical_history=medical_history,
     )
     form.save()
     return form
 
 def form_update(
-   *,
+    *,
     id,
-    medical_history: str,
+    medical_history: str = None,
 ) -> Form:
     form = form_get(id=id)
     if medical_history is not None:
         form.medical_history = medical_history
-        
     form.save()
     return form
 
@@ -107,6 +110,7 @@ def _draw_json_as_table(json_obj, elements, styles, level=0):
 def export_form_pdf(*, id) -> bytes:
     form = form_get(id=id)
     patient = form.patient
+    surgery = form.surgery
 
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(
@@ -130,6 +134,7 @@ def export_form_pdf(*, id) -> bytes:
         ["Name:", f"{getattr(patient, 'first_name', '')} {getattr(patient, 'last_name', '')}"],
         ["Date of Birth:", getattr(patient, 'dob', '')],
         ["Sex:", getattr(patient, 'get_sex_display', lambda: '')()],
+        ["Ethnicity:", getattr(patient, 'ethnicity', '')],
         ["Email:", getattr(patient, 'email', '')],
         ["Phone:", getattr(patient, 'phone', '')],
     ]
@@ -145,6 +150,38 @@ def export_form_pdf(*, id) -> bytes:
         ('LINEBELOW', (0, -1), (-1, -1), 0.25, colors.grey),
     ]))
     elements.append(patient_table)
+    elements.append(Spacer(1, 0.2 * inch))
+
+    elements.append(section_header("Surgery Details", styles))
+    elements.append(Spacer(1, 0.1 * inch))
+    
+    # Helper to format the date or return N/A
+    def format_date(dt):
+        if isinstance(dt, date):
+            return dt.strftime('%d %b %Y')
+        return 'N/A'
+
+    
+    surgery_data = [
+        ["Procedure:", getattr(surgery, 'name', 'N/A')],
+        ["Side:", getattr(surgery, 'side', 'N/A') or 'N/A'], # Use 'N/A' if side is None or empty string
+        ["Indication:", getattr(surgery, 'indication', 'N/A')],
+        ["Scheduled Date:", format_date(getattr(surgery, 'scheduled_date', None))],
+    ]
+    
+    surgery_table = Table(surgery_data, hAlign='LEFT', colWidths=[1.5*inch, 4.5*inch])
+    surgery_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (0, -1), colors.lightgrey),
+        ('TEXTCOLOR', (0, 0), (0, -1), colors.HexColor("#ff6f00")), # Using a new color for distinction
+        ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
+        ('FONTSIZE', (0, 0), (-1, -1), 11),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+        ('TOPPADDING', (0, 0), (-1, -1), 6),
+        ('ROWBACKGROUNDS', (1, 0), (1, -1), [colors.whitesmoke, colors.lightgrey]),
+        ('LINEBELOW', (0, -1), (-1, -1), 0.25, colors.grey),
+    ]))
+    elements.append(surgery_table)
+
     elements.append(Spacer(1, 0.2 * inch))
 
     # Form Details Section

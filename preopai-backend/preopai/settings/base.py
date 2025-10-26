@@ -32,6 +32,7 @@ INSTALLED_APPS = [
     "ai_engine",
     "forms",
     "users",
+    "surgeries",
 ]
 
 MIDDLEWARE = [

@@ -12,5 +12,5 @@ class FormListApi(APIView):
     @swagger_auto_schema(responses={200: FormSerializer(many=True)})
     def get(self, request):
         forms = form_list()
-        data = self.FormListSerializer(forms, many=True).data
+        # data = self.FormListSerializer(forms, many=True).data
         return Response(FormSerializer(forms, many=True).data)

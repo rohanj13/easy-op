@@ -23,6 +23,11 @@ from ai_engine.api.analyse_api import generate_response_api
 from ai_engine.api.response_detail_api import ResponseDetailApi
 from ai_engine.api.response_update_api import ResponseUpdateApi
 from ai_engine.api.response_list_api import ResponseListApi
+from surgeries.api.surgery_create_api import SurgeryCreateApi
+from surgeries.api.surgery_detail_api import SurgeryDetailApi
+from surgeries.api.surgery_list_api import SurgeryListApi
+from surgeries.api.surgery_update_api import SurgeryUpdateApi
+from surgeries.api.surgery_delete_api import SurgeryDeleteApi
 
 
 patient_patterns = [
@@ -58,6 +63,14 @@ response_patterns = [
     path('<uuid:id>/', ResponseDetailApi.as_view(), name='detail'),
 ]
 
+surgery_patterns = [
+    path('create/', SurgeryCreateApi.as_view(), name='surgery-create'),
+    path('<uuid:id>/', SurgeryDetailApi.as_view(), name='surgery-detail'),
+    path('', SurgeryListApi.as_view(), name='surgery-list'),
+    path('<uuid:id>/update/', SurgeryUpdateApi.as_view(), name='surgery-update'),
+    path('<uuid:id>/delete/', SurgeryDeleteApi.as_view(), name='surgery-delete'),
+]
+
 # Swagger schema view setup
 schema_view = get_schema_view(
     openapi.Info(
@@ -76,6 +89,7 @@ urlpatterns = [
     path('forms/', include((form_patterns, 'forms'))),
     path('ai/', include((ai_patterns, 'ai'))),
     path('responses/', include((response_patterns, 'responses'))),
+    path('surgeries/', include((surgery_patterns, 'surgeries'))),
     # Swagger/OpenAPI endpoints:
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
