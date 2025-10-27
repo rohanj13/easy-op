@@ -167,9 +167,9 @@ const NewForm = () => {
     try {
       setLoading(true);
       const response = await api.forms.formsCreateCreate({
-        hospital: DEMO_HOSPITAL_ID,
-        patient: selectedPatientId,
-        surgery: selectedSurgeryId,
+        hospital_id: DEMO_HOSPITAL_ID,
+        patient_id: selectedPatientId,
+        surgery_id: selectedSurgeryId,
         medical_history: medicalHistory,
       });
 

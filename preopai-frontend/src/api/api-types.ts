@@ -91,17 +91,17 @@ export interface FormCreate {
    * Hospital id
    * @format uuid
    */
-  hospital: string;
+  hospital_id: string;
   /**
    * Patient id
    * @format uuid
    */
-  patient: string;
+  patient_id: string;
   /**
    * Surgery
    * @format uuid
    */
-  surgery: string;
+  surgery_id: string;
   /** Medical history */
   medical_history: object;
 }

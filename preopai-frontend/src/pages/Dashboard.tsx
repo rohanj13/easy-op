@@ -37,12 +37,17 @@ const Dashboard = () => {
       const patientResponses = await Promise.all(patientPromises);
       
       const patientsMap: Record<string, Patient> = {};
-      patientResponses.forEach(response => {
+      patientResponses.forEach((response, index) => {
+        console.log(`👤 Patient response ${index}:`, response.data);
         if (response.data) {
-          patientsMap[response.data.id] = response.data;
+          // Use the ID from our request since the response doesn't include it
+          const patientId = patientIds[index];
+          console.log(`   Mapping patient ID: ${patientId}`);
+          patientsMap[patientId] = { ...response.data, id: patientId };
         }
       });
       console.log('👥 Patients map:', patientsMap);
+      console.log('👥 Patients map keys:', Object.keys(patientsMap));
       setPatients(patientsMap);
 
       // Fetch surgery details for each form

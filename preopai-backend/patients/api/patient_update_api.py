@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from rest_framework import serializers
 from patients.services import patient_update
 from drf_yasg.utils import swagger_auto_schema
+from patients.serializers import PatientSerializer
 
 class PatientUpdateApi(APIView):
     class PatientUpdateSerializer(serializers.Serializer):

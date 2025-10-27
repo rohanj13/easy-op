@@ -10,7 +10,6 @@ from surgeries.serializers import SurgerySerializer
 class FormCreateApi(APIView):
 
     class FormCreateSerializer(serializers.Serializer):
-        hospital_id = serializers.UUIDField()
         patient_id = serializers.UUIDField()
         surgery_id = serializers.UUIDField()
         medical_history = serializers.JSONField()
