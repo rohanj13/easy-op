@@ -11,13 +11,19 @@ embed_model = "text-embedding-3-small"
 index = pc.Index(index_name)
 client = OpenAI()
 
-def run_rag_pipeline(medical_history):
+def run_rag_pipeline(surgery_info, medical_history):
     # Compose the query from the medical history (string or dict)
     if isinstance(medical_history, dict):
         query = "\n".join(f"{k}: {v}" for k, v in medical_history.items())
     else:
         query = str(medical_history)
 
+    if isinstance(surgery_info, dict):
+        query += " " + "\n".join(f"{k}: {v}" for k, v in surgery_info.items())
+    else:
+        query += " " + str(medical_history)
+
+    print("RAG Pipeline - Query:", query)
     # Get embedding
     res = client.embeddings.create(
         input=[query],
