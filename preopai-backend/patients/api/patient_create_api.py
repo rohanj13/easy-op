@@ -14,7 +14,6 @@ class PatientCreateApi(APIView):
         ethnicity = serializers.CharField()
         phone = serializers.CharField()
         email = serializers.EmailField()
-        hospital_id = serializers.UUIDField()
 
 
     @swagger_auto_schema(request_body=PatientCreateSerializer)
